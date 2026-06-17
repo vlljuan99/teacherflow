@@ -1,0 +1,455 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------- Core ----------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  role         String
+  name         String
+  locale       String   @default("es")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  student           Student?
+  guardian          Guardian?
+  worksheetsCreated Worksheet[]  @relation("WorksheetCreator")
+  assignmentsCreated Assignment[] @relation("AssignmentCreator")
+  materialsUploaded Material[]   @relation("MaterialUploader")
+  auditLogs         AuditLog[]   @relation("AuditActor")
+  googleAccount     GoogleAccount?
+}
+
+model GoogleAccount {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerAccountId String
+  email             String?
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         DateTime?
+  scope             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Student {
+  id        String    @id @default(cuid())
+  userId    String?   @unique
+  user      User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  birthDate DateTime?
+  level     String    @default("A1")
+  status    String    @default("ACTIVE")
+  isMinor   Boolean   @default(false)
+  notes         String?
+  photoUrl      String?
+  meetLink      String?
+  groupId          String?
+  group            Group?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  driveFolderId    String?
+  notebookDocId    String?
+  notebookDocUrl   String?
+  nextSessionNote  String?
+  placementStatus      String   @default("PENDING")
+  placementLevel       String?
+  placementScore       Float?
+  placementMaxScore    Float?
+  placementSubmissionId String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  guardians     GuardianStudent[]
+  classes       Class[]
+  assignments   Assignment[]
+  submissions   Submission[]
+  payments      Payment[]
+  consents      Consent[]
+  materialLinks MaterialLink[]
+  sessionLogs   SessionLog[]
+}
+
+model Guardian {
+  id           String   @id @default(cuid())
+  userId       String?  @unique
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  firstName    String
+  lastName     String
+  email        String?
+  phone        String?
+  relationship String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  students GuardianStudent[]
+  consents Consent[]
+}
+
+model GuardianStudent {
+  guardianId String
+  studentId  String
+  guardian   Guardian @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([guardianId, studentId])
+}
+
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  level       String   @default("A1")
+  description String?
+  schedule    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  students      Student[]
+  classes       Class[]
+  assignments   Assignment[]
+  materialLinks MaterialLink[]
+}
+
+model Class {
+  id            String   @id @default(cuid())
+  title         String
+  titleAuto     Boolean  @default(true)
+  startAt       DateTime
+  endAt         DateTime
+  modality      String   @default("ONLINE")
+  location      String?
+  notes         String?
+  meetLink      String?
+  googleEventId String?
+  driveFolderId String?
+  driveDocId    String?
+  driveDocUrl   String?
+  groupId       String?
+  group         Group?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  studentId     String?
+  student       Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  attachments ClassAttachment[]
+
+  @@index([startAt])
+}
+
+model ClassAttachment {
+  id          String     @id @default(cuid())
+  classId     String
+  class       Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  worksheetId String?
+  worksheet   Worksheet? @relation(fields: [worksheetId], references: [id], onDelete: Cascade)
+  materialId  String?
+  material    Material?  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+
+  @@index([classId])
+  @@index([worksheetId])
+  @@index([materialId])
+}
+
+// ---------------- Worksheets ----------------
+
+model Worksheet {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  level       String   @default("A1")
+  topic       String?
+  language    String   @default("EN")
+  status      String   @default("DRAFT")
+  kind        String   @default("STANDARD")
+  createdById String
+  createdBy   User     @relation("WorksheetCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  exercises        Exercise[]
+  assignments      Assignment[]
+  materialLinks    MaterialLink[]
+  pdfImport        PdfImport?
+  classAttachments ClassAttachment[]
+}
+
+model Exercise {
+  id          String    @id @default(cuid())
+  worksheetId String
+  worksheet   Worksheet @relation(fields: [worksheetId], references: [id], onDelete: Cascade)
+  type        String
+  order       Int       @default(0)
+  prompt      String
+  payload     String
+  solution    String
+  points      Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  answers Answer[]
+
+  @@index([worksheetId, order])
+}
+
+model Assignment {
+  id          String    @id @default(cuid())
+  worksheetId String
+  worksheet   Worksheet @relation(fields: [worksheetId], references: [id], onDelete: Cascade)
+  studentId   String?
+  student     Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  groupId     String?
+  group       Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  dueAt       DateTime?
+  status      String    @default("PENDING")
+  createdById String
+  createdBy   User      @relation("AssignmentCreator", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  submissions Submission[]
+
+  @@index([studentId])
+  @@index([groupId])
+}
+
+model Submission {
+  id               String     @id @default(cuid())
+  assignmentId     String
+  assignment       Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  studentId        String
+  student          Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  startedAt        DateTime   @default(now())
+  submittedAt      DateTime?
+  timeSpentSeconds Int?
+  autoScore        Float?
+  manualScore      Float?
+  finalScore       Float?
+  maxScore         Float?
+  correctionStatus String     @default("PENDING")
+  teacherComment   String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  answers Answer[]
+
+  @@unique([assignmentId, studentId])
+}
+
+model Answer {
+  id             String     @id @default(cuid())
+  submissionId   String
+  submission     Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  exerciseId     String
+  exercise       Exercise   @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  value          String
+  autoCorrect    Boolean?
+  autoScore      Float?
+  manualScore    Float?
+  teacherComment String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@unique([submissionId, exerciseId])
+}
+
+// ---------------- Payments ----------------
+
+model Payment {
+  id           String    @id @default(cuid())
+  studentId    String
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  concept      String
+  amountCents  Int
+  currency     String    @default("EUR")
+  dueDate      DateTime
+  paidAt       DateTime?
+  method       String    @default("TRANSFER")
+  status       String    @default("PENDING")
+  notes        String?
+  providerMeta String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([studentId])
+  @@index([dueDate])
+}
+
+// ---------------- Consents (RGPD) ----------------
+
+model Consent {
+  id             String    @id @default(cuid())
+  studentId      String?
+  student        Student?  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  guardianId     String?
+  guardian       Guardian? @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  type           String
+  version        String
+  text           String
+  acceptedAt     DateTime  @default(now())
+  acceptedByName String
+  ip             String?
+  status         String    @default("ACCEPTED")
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+// ---------------- Materials ----------------
+
+model Material {
+  id           String   @id @default(cuid())
+  title        String
+  type         String
+  filePath     String
+  size         Int
+  mime         String
+  uploadedById String
+  uploadedBy   User     @relation("MaterialUploader", fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  links            MaterialLink[]
+  pdfImport        PdfImport?
+  classAttachments ClassAttachment[]
+}
+
+model MaterialLink {
+  id          String     @id @default(cuid())
+  materialId  String
+  material    Material   @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  studentId   String?
+  student     Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  groupId     String?
+  group       Group?     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  worksheetId String?
+  worksheet   Worksheet? @relation(fields: [worksheetId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+
+  @@index([materialId])
+  @@index([studentId])
+  @@index([groupId])
+  @@index([worksheetId])
+}
+
+model PdfImport {
+  id            String     @id @default(cuid())
+  materialId    String     @unique
+  material      Material   @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  worksheetId   String?    @unique
+  worksheet     Worksheet? @relation(fields: [worksheetId], references: [id], onDelete: SetNull)
+  status        String     @default("UPLOADED")
+  extractedText String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+// ---------------- Notebook (AI extraction) ----------------
+
+model SessionLog {
+  id            String   @id @default(cuid())
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  sessionDate   DateTime
+  title         String?
+  summary       String?
+  rawText       String
+  sourceHash    String
+  docOffsetStart Int?
+  docOffsetEnd   Int?
+  status        String   @default("PENDING")
+  errorMessage  String?
+  parsedAt      DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  vocab       SessionVocab[]
+  grammar     SessionGrammar[]
+  assessments SessionAssessment[]
+  embeddings  EmbeddingChunk[]
+
+  @@unique([studentId, sourceHash])
+  @@index([studentId, sessionDate])
+}
+
+model SessionVocab {
+  id              String     @id @default(cuid())
+  sessionLogId    String
+  sessionLog      SessionLog @relation(fields: [sessionLogId], references: [id], onDelete: Cascade)
+  term            String
+  translation     String?
+  type            String     @default("VOCAB")
+  exampleSentence String?
+  createdAt       DateTime   @default(now())
+
+  @@index([sessionLogId])
+  @@index([term])
+}
+
+model SessionGrammar {
+  id           String     @id @default(cuid())
+  sessionLogId String
+  sessionLog   SessionLog @relation(fields: [sessionLogId], references: [id], onDelete: Cascade)
+  topic        String
+  normalized   String
+  notes        String?
+  createdAt    DateTime   @default(now())
+
+  @@index([sessionLogId])
+  @@index([normalized])
+}
+
+model SessionAssessment {
+  id           String     @id @default(cuid())
+  sessionLogId String
+  sessionLog   SessionLog @relation(fields: [sessionLogId], references: [id], onDelete: Cascade)
+  kind         String
+  score        Float?
+  maxScore     Float?
+  comment      String?
+  createdAt    DateTime   @default(now())
+
+  @@index([sessionLogId])
+}
+
+model EmbeddingChunk {
+  id           String     @id @default(cuid())
+  sessionLogId String
+  sessionLog   SessionLog @relation(fields: [sessionLogId], references: [id], onDelete: Cascade)
+  chunkText    String
+  vector       String
+  tokenCount   Int?
+  createdAt    DateTime   @default(now())
+
+  @@index([sessionLogId])
+}
+
+// ---------------- Audit ----------------
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  actor       User?    @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  action      String
+  entity      String
+  entityId    String?
+  payload     String?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+}
