@@ -1,0 +1,19 @@
+#cloud-config
+# Bootstrap del servidor Hetzner para TeacherFlow.
+# Pásalo como user-data al crear el servidor. Instala Docker, añade swap
+# (el build de Next tira de RAM) y programa el backup diario.
+
+package_update: true
+packages:
+  - ca-certificates
+  - curl
+
+swap:
+  filename: /swapfile
+  size: 2G
+  maxsize: 2G
+
+runcmd:
+  - curl -fsSL https://get.docker.com | sh
+  - mkdir -p /opt/teacherflow/storage/uploads /opt/teacherflow/sites /opt/teacherflow/backups
+  - printf '0 4 * * * root /opt/teacherflow/backup.sh >> /var/log/teacherflow-backup.log 2>&1\n' > /etc/cron.d/teacherflow-backup

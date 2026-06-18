@@ -1,0 +1,9 @@
+# Caddy — reverse proxy de TeacherFlow.
+# El archivo del sitio (sites/teacherflow.caddy) lo crea bootstrap.sh con el
+# dominio o la URL sslip.io. Con dominio propio, Caddy emite TLS solo.
+
+{
+	# email tu@correo.com   # descomenta para avisos de Let's Encrypt
+}
+
+import sites/*.caddy

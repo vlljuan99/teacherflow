@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { APP_TIME_ZONE } from "./timezone";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -16,6 +17,7 @@ export function formatDate(date: Date | string | null | undefined, locale = "es"
   if (!date) return "—";
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat(locale, {
+    timeZone: APP_TIME_ZONE,
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -26,6 +28,7 @@ export function formatDateTime(date: Date | string | null | undefined, locale = 
   if (!date) return "—";
   const d = typeof date === "string" ? new Date(date) : date;
   return new Intl.DateTimeFormat(locale, {
+    timeZone: APP_TIME_ZONE,
     year: "numeric",
     month: "short",
     day: "2-digit",

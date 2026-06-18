@@ -13,6 +13,7 @@ import { QuickRefs } from "@/components/live/quick-refs";
 import { VocabCatcher } from "@/components/live/vocab-catcher";
 import { NextSessionNote } from "@/components/live/next-session-note";
 import { NotebookButton } from "@/components/live/notebook-button";
+import { ClassReactions } from "@/components/live/class-reactions";
 
 export const dynamic = "force-dynamic";
 
@@ -201,6 +202,9 @@ export default async function LiveClassPage({
           </CardContent>
         </Card>
       )}
+
+      {/* Quick references */}
+      <ClassReactions />
 
       {/* Quick references */}
       <Card>

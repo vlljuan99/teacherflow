@@ -1,0 +1,81 @@
+name: Deploy to Hetzner
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run typecheck
+
+  deploy:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HETZNER_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.HETZNER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Package source
+        run: |
+          tar \
+            --exclude='./node_modules' \
+            --exclude='./.next' \
+            --exclude='./.git' \
+            --exclude='./storage/uploads/*' \
+            --exclude='./prisma/dev.db*' \
+            --exclude='./tsconfig.tsbuildinfo' \
+            --exclude='./.env' \
+            --exclude='./deploy/.deploy-secrets' \
+            -czf /tmp/teacherflow-src.tar.gz .
+
+      - name: Upload source + build script
+        run: |
+          scp -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=accept-new \
+            /tmp/teacherflow-src.tar.gz \
+            root@${{ secrets.HETZNER_HOST }}:/opt/teacherflow/src.tar.gz
+          scp -i ~/.ssh/id_ed25519 \
+            deploy/build-on-server.sh \
+            root@${{ secrets.HETZNER_HOST }}:/opt/teacherflow/build-on-server.sh
+
+      - name: Build + deploy on server
+        run: |
+          ssh -i ~/.ssh/id_ed25519 root@${{ secrets.HETZNER_HOST }} '
+            set -e
+            cd /opt/teacherflow
+            sed -i "s/\r$//" build-on-server.sh
+            chmod +x build-on-server.sh
+            bash build-on-server.sh
+          '
+
+      - name: Smoke test
+        run: |
+          for i in {1..10}; do
+            if curl -sf -o /dev/null https://teacherflow.167-233-99-156.sslip.io/login; then
+              echo "✓ App responds OK"
+              exit 0
+            fi
+            echo "Waiting for app to be ready... ($i/10)"
+            sleep 3
+          done
+          echo "✗ App did not respond"
+          exit 1

@@ -11,6 +11,7 @@ import Link from "next/link";
 import { MeetButton } from "@/components/ui/meet-button";
 import { DeleteClassButton } from "@/components/classes/delete-class-button";
 import { ClassHomeworkSection } from "@/components/homework/class-homework-section";
+import { SeriesBanner } from "@/components/classes/series-banner";
 import { ClassForm } from "../_form";
 import { updateClass } from "@/server/actions/classes";
 import { generateMeetForClass, removeMeetForClass } from "@/server/actions/google";
@@ -131,6 +132,10 @@ export default async function ClassDetailPage({
           </CardContent>
         </Card>
       )}
+      {klass.seriesId && (
+        <SeriesBanner seriesId={klass.seriesId} seriesNote={klass.seriesNote} />
+      )}
+
       <ClassHomeworkSection studentId={klass.studentId} groupId={klass.groupId} />
 
       <Card>

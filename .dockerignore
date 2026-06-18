@@ -8,4 +8,8 @@ storage/uploads/*
 !storage/uploads/.gitkeep
 README.md
 Dockerfile
-docker-compose.yml
+deploy
+prisma/dev.db
+prisma/dev.db-journal
+*.log
+.vscode

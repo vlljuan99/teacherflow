@@ -15,6 +15,7 @@ import { CreateMeetButton } from "@/components/students/create-meet-button";
 import { NotebookSection } from "@/components/notebook/notebook-section";
 import { StudentHomeworkSection } from "@/components/homework/student-homework-section";
 import { StudentClassesSection } from "@/components/students/student-classes-section";
+import { PlacementCard } from "@/components/placement-test/placement-card";
 
 export default async function StudentDetailPage({
   params,
@@ -147,6 +148,8 @@ export default async function StudentDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      <PlacementCard studentId={student.id} />
 
       <StudentClassesSection studentId={student.id} />
 

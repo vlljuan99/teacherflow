@@ -1,0 +1,27 @@
+# Compose de teacherflow cuando comparte Caddy + Postgres con otro stack
+# (en este caso, con tilestudio en /opt/tilestudio). NO arranca su propio
+# Caddy ni su propio Postgres — usa los del stack vecino vía red externa.
+#
+# Layout esperado en /opt/teacherflow/:
+#   docker-compose.yml   (este archivo)
+#   app.env              (vars de la app)
+#   storage/uploads/     (volumen)
+#   src.tar.gz           (lo sube deploy.ps1)
+
+name: teacherflow
+
+services:
+  app:
+    image: teacherflow:latest
+    container_name: teacherflow-app
+    restart: unless-stopped
+    env_file:
+      - app.env
+    volumes:
+      - ./storage/uploads:/app/storage/uploads
+    networks:
+      - tilestudio_default
+
+networks:
+  tilestudio_default:
+    external: true

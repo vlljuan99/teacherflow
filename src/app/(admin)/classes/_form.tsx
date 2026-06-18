@@ -13,7 +13,8 @@ import { DateTimeRangePicker } from "@/components/ui/datetime-range";
 import { Avatar } from "@/components/ui/avatar";
 import { MeetButton } from "@/components/ui/meet-button";
 import { ClassModality } from "@/lib/enums";
-import { Video, Users2, Sparkles, Loader2 } from "lucide-react";
+import { Video, Users2, Sparkles, Loader2, Repeat } from "lucide-react";
+import { addWeeks } from "date-fns";
 import { useFormStatus } from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -86,6 +87,14 @@ export function ClassForm({
     new Set(klass?.attachmentIds?.materialIds ?? []),
   );
   const [attachQuery, setAttachQuery] = useState("");
+
+  // --- Recurrence (only when creating)
+  const isNew = !klass?.id;
+  const [repeat, setRepeat] = useState(false);
+  const [weekdays, setWeekdays] = useState<Set<number>>(new Set());
+  const [untilDate, setUntilDate] = useState<string>(
+    formatDateInput(addWeeks(new Date(), 8)),
+  );
 
   const student = useMemo(
     () => students.find((s) => s.id === studentId) ?? null,
@@ -316,6 +325,93 @@ export function ClassForm({
         </div>
       </section>
 
+      {/* Step 6 — Recurrence (only on create) */}
+      {isNew && (
+        <section className="space-y-2">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            6. ¿Repetir?
+          </h3>
+          <label className="flex items-center gap-2 rounded-lg border bg-card p-3 cursor-pointer hover:border-primary/40">
+            <input
+              type="checkbox"
+              checked={repeat}
+              onChange={(e) => setRepeat(e.target.checked)}
+              className="h-4 w-4 rounded border-input"
+            />
+            <Repeat className="h-4 w-4 text-primary" />
+            <span className="text-sm">
+              Repetir esta clase semanalmente
+            </span>
+          </label>
+
+          {repeat && (
+            <>
+              <input type="hidden" name="repeat" value="true" />
+              <input
+                type="hidden"
+                name="weekdays"
+                value={[...weekdays].sort().join(",")}
+              />
+              <input type="hidden" name="untilDate" value={untilDate} />
+              <div className="rounded-lg border bg-card/50 p-3 space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Días de la semana</label>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {[
+                      { v: 1, l: "L" },
+                      { v: 2, l: "M" },
+                      { v: 3, l: "X" },
+                      { v: 4, l: "J" },
+                      { v: 5, l: "V" },
+                      { v: 6, l: "S" },
+                      { v: 7, l: "D" },
+                    ].map((d) => {
+                      const active = weekdays.has(d.v);
+                      return (
+                        <button
+                          key={d.v}
+                          type="button"
+                          onClick={() =>
+                            setWeekdays((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(d.v)) next.delete(d.v);
+                              else next.add(d.v);
+                              return next;
+                            })
+                          }
+                          className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-md border text-sm font-semibold transition",
+                            active
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "hover:border-primary/40 hover:bg-accent/10",
+                          )}
+                        >
+                          {d.l}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Hasta</label>
+                  <Input
+                    type="date"
+                    value={untilDate}
+                    onChange={(e) => setUntilDate(e.target.value)}
+                    className="mt-1.5 w-48"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {weekdays.size === 0
+                    ? "Elige al menos un día"
+                    : `Se crearán aproximadamente ${estimateOccurrences(startAt, [...weekdays], untilDate)} clases.`}
+                </p>
+              </div>
+            </>
+          )}
+        </section>
+      )}
+
       <section className="space-y-1.5">
         <Label htmlFor="notes" className="text-xs">{t("notes")}</Label>
         <Textarea id="notes" name="notes" rows={3} defaultValue={klass?.notes ?? ""} />
@@ -326,6 +422,33 @@ export function ClassForm({
       </div>
     </form>
   );
+}
+
+function formatDateInput(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function estimateOccurrences(
+  startAt: Date,
+  weekdays: number[],
+  untilDateStr: string,
+): number {
+  if (weekdays.length === 0) return 0;
+  const until = new Date(untilDateStr);
+  if (isNaN(until.getTime()) || until < startAt) return 0;
+  let cur = new Date(startAt);
+  cur.setHours(0, 0, 0, 0);
+  const end = new Date(until);
+  end.setHours(23, 59, 59, 999);
+  let n = 0;
+  while (cur <= end) {
+    const dow = cur.getDay() === 0 ? 7 : cur.getDay();
+    if (weekdays.includes(dow)) n += 1;
+    cur.setDate(cur.getDate() + 1);
+    if (n > 200) break;
+  }
+  return n;
 }
 
 function SubmitButton({ label }: { label: string }) {

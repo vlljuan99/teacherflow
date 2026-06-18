@@ -1,37 +1,20 @@
+# Postgres para desarrollo local.
+# Levanta con: `docker compose up -d db`
+# Apaga con:   `docker compose down`
+# El stack de producción está en deploy/docker-compose.yml.
+
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-teacherflow}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-teacherflow}
-      POSTGRES_DB: ${POSTGRES_DB:-teacherflow}
-    volumes:
-      - db_data:/var/lib/postgresql/data
+      POSTGRES_USER: teacherflow
+      POSTGRES_PASSWORD: teacherflow
+      POSTGRES_DB: teacherflow
     ports:
       - "5432:5432"
-
-  app:
-    build: .
-    restart: unless-stopped
-    depends_on:
-      - db
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-teacherflow}:${POSTGRES_PASSWORD:-teacherflow}@db:5432/${POSTGRES_DB:-teacherflow}
-      AUTH_SECRET: ${AUTH_SECRET}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
-      UPLOAD_DIR: /app/storage/uploads
-      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-20}
-      DEFAULT_TEACHER_EMAIL: ${DEFAULT_TEACHER_EMAIL:-profesora@teacherflow.local}
-      DEFAULT_TEACHER_PASSWORD: ${DEFAULT_TEACHER_PASSWORD:-changeme123}
-      DEFAULT_TEACHER_NAME: ${DEFAULT_TEACHER_NAME:-Profesora}
-      DEFAULT_STUDENT_EMAIL: ${DEFAULT_STUDENT_EMAIL:-alumno@teacherflow.local}
-      DEFAULT_STUDENT_PASSWORD: ${DEFAULT_STUDENT_PASSWORD:-changeme123}
-    ports:
-      - "3000:3000"
     volumes:
-      - uploads:/app/storage/uploads
+      - db_data:/var/lib/postgresql/data
 
 volumes:
   db_data:
-  uploads:

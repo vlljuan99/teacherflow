@@ -1,0 +1,62 @@
+# ----------------------------------------------------------------------------
+# TeacherFlow — stack de producción (Hetzner)
+#
+# Caddy (reverse proxy + TLS) + Postgres 17 + app.
+# Layout esperado en el servidor: /opt/teacherflow/
+#   docker-compose.yml   (este archivo)
+#   Caddyfile            (importa sites/*.caddy)
+#   sites/teacherflow.caddy  (lo genera bootstrap.sh)
+#   .env                 (POSTGRES_PASSWORD, PUBLIC_HOST, DOMAIN)
+#   app.env              (AUTH_SECRET, Google OAuth, OpenAI, Gemini, etc.)
+#   storage/uploads/     (volumen persistente de fotos y materiales)
+#   backups/             (cron diario lo llena)
+# ----------------------------------------------------------------------------
+
+name: teacherflow
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sites:/etc/caddy/sites:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: teacherflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en /opt/teacherflow/.env}
+      POSTGRES_DB: teacherflow
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U teacherflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: teacherflow:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://teacherflow:${POSTGRES_PASSWORD}@postgres:5432/teacherflow?schema=public
+      UPLOAD_DIR: /app/storage/uploads
+    env_file:
+      - app.env
+    volumes:
+      - ./storage/uploads:/app/storage/uploads
+
+volumes:
+  caddy_data:
+  caddy_config:
+  pgdata:

@@ -10,6 +10,13 @@ import { requireRole } from "@/server/auth/session";
 import { audit } from "@/server/audit/log";
 import { createDriveFolder, createDriveDoc } from "@/server/google/drive";
 import { buildAutoTitle } from "@/server/classes/title";
+import {
+  generateRecurrenceDates,
+  describeRecurrence,
+  type IsoWeekday,
+} from "@/server/classes/recurrence";
+import { randomUUID } from "node:crypto";
+import { inMadrid, parseMadridDateTime } from "@/lib/timezone";
 
 const ClassSchema = z
   .object({
@@ -18,8 +25,8 @@ const ClassSchema = z
       .union([z.literal("on"), z.literal("true"), z.literal("false"), z.literal("")])
       .optional()
       .transform((v) => v !== "false"),
-    startAt: z.string().transform((v) => new Date(v)),
-    endAt: z.string().transform((v) => new Date(v)),
+    startAt: z.string().transform(parseMadridDateTime),
+    endAt: z.string().transform(parseMadridDateTime),
     modality: z.nativeEnum(ClassModality),
     location: z.string().max(200).optional().transform((v) => v || null),
     groupId: z.string().optional().transform((v) => v || null),
@@ -33,7 +40,27 @@ function parseFields(formData: FormData) {
   delete (entries as Record<string, unknown>).worksheetIds;
   delete (entries as Record<string, unknown>).materialIds;
   delete (entries as Record<string, unknown>)._track_start;
+  delete (entries as Record<string, unknown>).repeat;
+  delete (entries as Record<string, unknown>).weekdays;
+  delete (entries as Record<string, unknown>).untilDate;
   return entries;
+}
+
+function parseRecurrence(formData: FormData): {
+  weekdays: IsoWeekday[];
+  untilDate: Date;
+} | null {
+  if (formData.get("repeat") !== "true") return null;
+  const wdRaw = String(formData.get("weekdays") ?? "");
+  const weekdays = wdRaw
+    .split(",")
+    .map((s) => Number(s.trim()))
+    .filter((n): n is IsoWeekday => n >= 1 && n <= 7) as IsoWeekday[];
+  if (weekdays.length === 0) return null;
+  const untilStr = String(formData.get("untilDate") ?? "");
+  const untilDate = new Date(untilStr);
+  if (isNaN(untilDate.getTime())) return null;
+  return { weekdays, untilDate };
 }
 
 function getAttachmentIds(formData: FormData): {
@@ -49,6 +76,7 @@ export async function createClass(formData: FormData) {
   const session = await requireRole(Role.TEACHER);
   const data = ClassSchema.parse(parseFields(formData));
   const { worksheetIds, materialIds } = getAttachmentIds(formData);
+  const recurrence = parseRecurrence(formData);
 
   // Inherit Meet link from the student's permanent link if online.
   let meetLink: string | null = null;
@@ -58,6 +86,63 @@ export async function createClass(formData: FormData) {
       select: { meetLink: true },
     });
     meetLink = student?.meetLink ?? null;
+  }
+
+  // --- Recurrence path: create N classes, skip Drive doc per class to avoid
+  // hammering the API. Series share a seriesId so they can be operated as one.
+  if (recurrence) {
+    const dates = generateRecurrenceDates(data.startAt, recurrence);
+    const duration = data.endAt.getTime() - data.startAt.getTime();
+    const seriesId = randomUUID();
+    const seriesNote = describeRecurrence(recurrence.weekdays, recurrence.untilDate);
+
+    let studentName: string | null = null;
+    let groupName: string | null = null;
+    if (data.titleAuto) {
+      if (data.studentId) {
+        const s = await prisma.student.findUnique({
+          where: { id: data.studentId },
+          select: { firstName: true },
+        });
+        studentName = s?.firstName ?? null;
+      }
+      if (data.groupId) {
+        const g = await prisma.group.findUnique({
+          where: { id: data.groupId },
+          select: { name: true },
+        });
+        groupName = g?.name ?? null;
+      }
+    }
+
+    await prisma.class.createMany({
+      data: dates.map((start) => ({
+        title: data.titleAuto
+          ? buildAutoTitle({ studentName, groupName, startAt: start })
+          : data.title,
+        titleAuto: data.titleAuto,
+        startAt: start,
+        endAt: new Date(start.getTime() + duration),
+        modality: data.modality,
+        location: data.location,
+        notes: data.notes,
+        groupId: data.groupId,
+        studentId: data.studentId,
+        meetLink,
+        seriesId,
+        seriesNote,
+      })),
+    });
+
+    await audit({
+      actorUserId: session.user.id,
+      action: "class.series.create",
+      entity: "Class",
+      entityId: seriesId,
+      payload: { count: dates.length, weekdays: recurrence.weekdays },
+    });
+    revalidatePath("/classes");
+    redirect("/classes");
   }
 
   const c = await prisma.class.create({
@@ -196,12 +281,12 @@ export async function moveClass(
   const duration = klass.endAt.getTime() - klass.startAt.getTime();
   let newStart: Date;
   if (keepTime) {
-    newStart = new Date(target);
-    newStart.setHours(
-      klass.startAt.getHours(),
-      klass.startAt.getMinutes(),
-      0,
-      0,
+    const targetMadrid = inMadrid(target);
+    const currentMadrid = inMadrid(klass.startAt);
+    const pad = (value: number) => String(value).padStart(2, "0");
+    newStart = parseMadridDateTime(
+      `${targetMadrid.getFullYear()}-${pad(targetMadrid.getMonth() + 1)}-${pad(targetMadrid.getDate())}` +
+        `T${pad(currentMadrid.getHours())}:${pad(currentMadrid.getMinutes())}`,
     );
   } else {
     newStart = new Date(target);
@@ -229,6 +314,26 @@ export async function moveClass(
     entityId: classId,
   });
   revalidatePath("/classes");
+}
+
+export async function deleteClassSeries(
+  seriesId: string,
+  opts: { onlyFuture?: boolean } = {},
+) {
+  const session = await requireRole(Role.TEACHER);
+  const where = opts.onlyFuture
+    ? { seriesId, startAt: { gte: new Date() } }
+    : { seriesId };
+  const result = await prisma.class.deleteMany({ where });
+  await audit({
+    actorUserId: session.user.id,
+    action: "class.series.delete",
+    entity: "Class",
+    entityId: seriesId,
+    payload: { count: result.count, onlyFuture: !!opts.onlyFuture },
+  });
+  revalidatePath("/classes");
+  return result.count;
 }
 
 export async function deleteClass(id: string) {

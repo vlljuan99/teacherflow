@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -72,14 +72,15 @@ model Student {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  guardians     GuardianStudent[]
-  classes       Class[]
-  assignments   Assignment[]
-  submissions   Submission[]
-  payments      Payment[]
-  consents      Consent[]
-  materialLinks MaterialLink[]
-  sessionLogs   SessionLog[]
+  guardians      GuardianStudent[]
+  classes        Class[]
+  assignments    Assignment[]
+  submissions    Submission[]
+  payments       Payment[]
+  consents       Consent[]
+  materialLinks  MaterialLink[]
+  sessionLogs    SessionLog[]
+  placementTest  PlacementTest?
 }
 
 model Guardian {
@@ -136,6 +137,8 @@ model Class {
   driveFolderId String?
   driveDocId    String?
   driveDocUrl   String?
+  seriesId      String?
+  seriesNote    String?
   groupId       String?
   group         Group?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
   studentId     String?
@@ -146,6 +149,7 @@ model Class {
   attachments ClassAttachment[]
 
   @@index([startAt])
+  @@index([seriesId])
 }
 
 model ClassAttachment {
@@ -434,6 +438,41 @@ model EmbeddingChunk {
   createdAt    DateTime   @default(now())
 
   @@index([sessionLogId])
+}
+
+// ---------------- Placement Test ----------------
+
+model PlacementTest {
+  id                String   @id @default(cuid())
+  studentId         String   @unique
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Part 1 (Grammar & Vocabulary) — JSON array of answer letters
+  grammarAnswers    String?
+  grammarScore      Float?
+
+  // Part 2 (Reading) — JSON array
+  readingAnswers    String?
+  readingScore      Float?
+
+  // Part 3 (Writing) — manual grade
+  writingText       String?
+  writingScore      Float?
+  writingComment    String?
+
+  // Part 4 (Speaking) — manual grade
+  speakingNotes     String?
+  speakingScore     Float?
+  speakingComment   String?
+
+  // Aggregated
+  finalScore        Float?
+  cefrLevel         String?
+
+  status            String   @default("IN_PROGRESS")
+  completedAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 // ---------------- Audit ----------------
