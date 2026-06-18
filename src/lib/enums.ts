@@ -97,6 +97,42 @@ export const MaterialType = {
 } as const;
 export type MaterialType = (typeof MaterialType)[keyof typeof MaterialType];
 
+export const ExamType = {
+  APTIS: "APTIS",
+  CAMBRIDGE_KET: "CAMBRIDGE_KET",
+  CAMBRIDGE_PET: "CAMBRIDGE_PET",
+  CAMBRIDGE_FCE: "CAMBRIDGE_FCE",
+  CAMBRIDGE_CAE: "CAMBRIDGE_CAE",
+  CAMBRIDGE_CPE: "CAMBRIDGE_CPE",
+  TRINITY: "TRINITY",
+  EOI: "EOI",
+} as const;
+export type ExamType = (typeof ExamType)[keyof typeof ExamType];
+
+export const MaterialCategory = {
+  GRAMMAR: "GRAMMAR",
+  VOCABULARY: "VOCABULARY",
+  READING: "READING",
+  WRITING: "WRITING",
+  LISTENING: "LISTENING",
+  SPEAKING: "SPEAKING",
+  WORKBOOK: "WORKBOOK",
+  VERB_LIST: "VERB_LIST",
+  REWRITING: "REWRITING",
+  EXAM_PRACTICE: "EXAM_PRACTICE",
+  ELEMENTARY: "ELEMENTARY",
+  PRESCHOOL: "PRESCHOOL",
+  CHALLENGES: "CHALLENGES",
+  OTHER: "OTHER",
+} as const;
+export type MaterialCategory = (typeof MaterialCategory)[keyof typeof MaterialCategory];
+
+export const StorageBackend = {
+  LOCAL: "local",
+  AZURE: "azure",
+} as const;
+export type StorageBackend = (typeof StorageBackend)[keyof typeof StorageBackend];
+
 export const ConsentType = {
   DATA_PROCESSING: "DATA_PROCESSING",
   IMAGE_RIGHTS: "IMAGE_RIGHTS",

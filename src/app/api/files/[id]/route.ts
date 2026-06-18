@@ -4,7 +4,8 @@ import { stat } from "node:fs/promises";
 import { Readable } from "node:stream";
 import { auth } from "@/server/auth/config";
 import { prisma } from "@/lib/db";
-import { resolveUploadPath } from "@/lib/upload";
+import { azureReadUrl, resolveLocalPath } from "@/lib/storage";
+import { StorageBackend } from "@/lib/enums";
 
 export async function GET(
   _req: Request,
@@ -21,7 +22,12 @@ export async function GET(
   }
   // Materials are global: any authenticated user (teacher, student, guardian) can read.
 
-  const filePath = resolveUploadPath(material.filePath);
+  if (material.storage === StorageBackend.AZURE && material.blobName) {
+    const url = azureReadUrl(material.blobName, 15);
+    return NextResponse.redirect(url, 302);
+  }
+
+  const filePath = resolveLocalPath(material.filePath);
   try {
     await stat(filePath);
   } catch {

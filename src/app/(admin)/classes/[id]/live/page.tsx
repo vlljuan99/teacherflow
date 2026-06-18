@@ -14,6 +14,7 @@ import { VocabCatcher } from "@/components/live/vocab-catcher";
 import { NextSessionNote } from "@/components/live/next-session-note";
 import { NotebookButton } from "@/components/live/notebook-button";
 import { ClassReactions } from "@/components/live/class-reactions";
+import { madridDayBounds } from "@/lib/timezone";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,18 @@ export default async function LiveClassPage({
 
   const student = klass.student;
   const meetLink = klass.meetLink ?? student?.meetLink ?? null;
+  const todayBounds = madridDayBounds();
+  const todaySeriesClass = klass.seriesId
+    ? await prisma.class.findFirst({
+        where: {
+          seriesId: klass.seriesId,
+          id: { not: klass.id },
+          startAt: { gte: todayBounds.start, lte: todayBounds.end },
+        },
+        orderBy: { startAt: "asc" },
+        select: { id: true, title: true, startAt: true },
+      })
+    : null;
 
   // Last 3 session logs (from Tanda 4 notebook extraction) for context
   const recentSessions = student
@@ -69,6 +82,22 @@ export default async function LiveClassPage({
           Volver al detalle de la clase
         </Link>
       </div>
+
+      {todaySeriesClass && (
+        <Card className="border-warning bg-warning/10">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5">
+            <div>
+              <p className="font-semibold">Esta no es la ocurrencia de hoy</p>
+              <p className="text-sm text-muted-foreground">
+                Hay otra clase de esta misma serie programada para hoy.
+              </p>
+            </div>
+            <Link href={`/classes/${todaySeriesClass.id}/live`}>
+              <Button>Entrar en la clase de hoy</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Header — student card + timer */}
       <div className="grid gap-4 md:grid-cols-[2fr_1fr]">

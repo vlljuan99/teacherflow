@@ -294,11 +294,46 @@
     "fileType": "Tipo",
     "linkTo": "Vincular con",
     "uploadedBy": "Subido por",
+    "level": "Nivel",
+    "examType": "Examen",
+    "category": "Categoría",
+    "anyLevel": "Cualquier nivel",
+    "anyExam": "Cualquier examen",
+    "allCategories": "Todas las categorías",
+    "importFromClassroom": "Importar desde Classroom",
+    "noLevel": "—",
+    "noExam": "—",
     "typeOptions": {
       "PDF": "PDF",
       "IMAGE": "Imagen",
       "AUDIO": "Audio",
       "DOCUMENT": "Documento"
+    },
+    "examOptions": {
+      "APTIS": "Aptis",
+      "CAMBRIDGE_KET": "Cambridge KET",
+      "CAMBRIDGE_PET": "Cambridge PET",
+      "CAMBRIDGE_FCE": "Cambridge FCE",
+      "CAMBRIDGE_CAE": "Cambridge CAE",
+      "CAMBRIDGE_CPE": "Cambridge CPE",
+      "TRINITY": "Trinity",
+      "EOI": "EOI"
+    },
+    "categoryOptions": {
+      "GRAMMAR": "Gramática",
+      "VOCABULARY": "Vocabulario",
+      "READING": "Reading",
+      "WRITING": "Writing",
+      "LISTENING": "Listening",
+      "SPEAKING": "Speaking",
+      "WORKBOOK": "Workbook",
+      "VERB_LIST": "Lista de verbos",
+      "REWRITING": "Rewriting",
+      "EXAM_PRACTICE": "Práctica de examen",
+      "ELEMENTARY": "Primaria",
+      "PRESCHOOL": "Infantil",
+      "CHALLENGES": "Retos / Actividades",
+      "OTHER": "Otros"
     }
   },
   "level": {

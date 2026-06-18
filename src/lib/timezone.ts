@@ -11,3 +11,19 @@ export function parseMadridDateTime(value: string): Date {
 export function inMadrid(date: Date | string): Date {
   return toZonedTime(typeof date === "string" ? new Date(date) : date, APP_TIME_ZONE);
 }
+
+export function madridDayBounds(date: Date = new Date()): { start: Date; end: Date } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const read = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  const day = `${read("year")}-${read("month")}-${read("day")}`;
+  return {
+    start: fromZonedTime(`${day}T00:00:00.000`, APP_TIME_ZONE),
+    end: fromZonedTime(`${day}T23:59:59.999`, APP_TIME_ZONE),
+  };
+}

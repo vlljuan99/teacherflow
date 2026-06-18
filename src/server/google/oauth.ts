@@ -12,8 +12,12 @@ export const CALENDAR_SCOPES = [
   "profile",
   "https://www.googleapis.com/auth/calendar.events",
   "https://www.googleapis.com/auth/drive.file",
+  "https://www.googleapis.com/auth/drive.readonly",
   "https://www.googleapis.com/auth/documents",
   "https://www.googleapis.com/auth/meetings.space.created",
+  "https://www.googleapis.com/auth/classroom.courses.readonly",
+  "https://www.googleapis.com/auth/classroom.topics.readonly",
+  "https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly",
 ].join(" ");
 
 export function calendarRedirectUri() {

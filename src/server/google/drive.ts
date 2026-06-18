@@ -81,6 +81,59 @@ export async function exportDocAsPlainText(
   return res.text();
 }
 
+export interface DriveFileMeta {
+  id: string;
+  name: string;
+  mimeType: string;
+  size?: string;
+}
+
+export async function getDriveFileMeta(
+  teacherUserId: string,
+  fileId: string,
+): Promise<DriveFileMeta | null> {
+  const accessToken = await getValidAccessToken(teacherUserId);
+  const url = `${DRIVE_FILES}/${encodeURIComponent(fileId)}?fields=id,name,mimeType,size&supportsAllDrives=true`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Drive meta failed: ${res.status} ${await res.text()}`);
+  return (await res.json()) as DriveFileMeta;
+}
+
+// Download a Drive file as binary. For Google Docs/Sheets/Slides, use exportDriveFile instead.
+export async function downloadDriveFile(
+  teacherUserId: string,
+  fileId: string,
+): Promise<{ buffer: Buffer; mime: string }> {
+  const accessToken = await getValidAccessToken(teacherUserId);
+  const url = `${DRIVE_FILES}/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error(`Drive download failed: ${res.status} ${await res.text()}`);
+  const mime = res.headers.get("content-type") ?? "application/octet-stream";
+  const buf = Buffer.from(await res.arrayBuffer());
+  return { buffer: buf, mime };
+}
+
+// Export a Google-native doc (Docs/Sheets/Slides) as the given MIME type.
+export async function exportDriveFile(
+  teacherUserId: string,
+  fileId: string,
+  exportMime: string,
+): Promise<{ buffer: Buffer; mime: string }> {
+  const accessToken = await getValidAccessToken(teacherUserId);
+  const url = `${DRIVE_FILES}/${encodeURIComponent(fileId)}/export?mimeType=${encodeURIComponent(exportMime)}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) throw new Error(`Drive export failed: ${res.status} ${await res.text()}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  return { buffer: buf, mime: exportMime };
+}
+
 export async function createDriveDoc(
   teacherUserId: string,
   name: string,

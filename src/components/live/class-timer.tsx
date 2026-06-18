@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { APP_TIME_ZONE } from "@/lib/timezone";
 
 export function ClassTimer({ startAt, endAt }: { startAt: Date; endAt: Date }) {
   const start = new Date(startAt).getTime();
@@ -21,7 +22,9 @@ export function ClassTimer({ startAt, endAt }: { startAt: Date; endAt: Date }) {
   if (now < start) {
     phase = "before";
     const sec = Math.round((start - now) / 1000);
-    label = `Empieza en ${formatHMS(sec)}`;
+    label = sec > 24 * 60 * 60
+      ? `Empieza ${formatLongStart(new Date(start))}`
+      : `Empieza en ${formatHMS(sec)}`;
   } else if (now > end) {
     phase = "over";
     const sec = Math.round((now - end) / 1000);
@@ -83,7 +86,20 @@ function formatHMS(totalSec: number): string {
 }
 
 function fmtClock(t: number): string {
-  const d = new Date(t);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return new Intl.DateTimeFormat("es-ES", {
+    timeZone: APP_TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(t));
+}
+
+function formatLongStart(date: Date): string {
+  return new Intl.DateTimeFormat("es-ES", {
+    timeZone: APP_TIME_ZONE,
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }

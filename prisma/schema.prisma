@@ -320,6 +320,14 @@ model Material {
   filePath     String
   size         Int
   mime         String
+  originalName String?
+  storage      String   @default("local")   // local | azure
+  blobName     String?                       // when storage = azure
+  level        String?                       // A1..C2 (null = any)
+  examType     String?                       // APTIS, CAMBRIDGE_PET, ... (null = none)
+  category     String   @default("OTHER")    // GRAMMAR, READING, WORKBOOK, ...
+  sourceUrl    String?                       // optional original (e.g. Drive file id)
+  sourceTopic  String?                       // free-text topic from import (Classroom)
   uploadedById String
   uploadedBy   User     @relation("MaterialUploader", fields: [uploadedById], references: [id])
   createdAt    DateTime @default(now())
@@ -328,6 +336,10 @@ model Material {
   links            MaterialLink[]
   pdfImport        PdfImport?
   classAttachments ClassAttachment[]
+
+  @@index([level])
+  @@index([examType])
+  @@index([category])
 }
 
 model MaterialLink {
