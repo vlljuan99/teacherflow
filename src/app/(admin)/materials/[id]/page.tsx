@@ -6,7 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Download, Wand2, FileText } from "lucide-react";
-import { deleteMaterial } from "@/server/actions/materials";
+import { deleteMaterial, updateMaterialMeta } from "@/server/actions/materials";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { TRACK_ORDER, TRACK_SUBSECTIONS, MaterialTrack } from "@/lib/enums";
 import { convertPdfToWorksheet } from "@/server/actions/pdf-convert";
 import { getTranslations } from "next-intl/server";
 import { formatDate } from "@/lib/utils";
@@ -18,6 +22,7 @@ export default async function MaterialDetailPage({
 }) {
   const { id } = await params;
   const tCommon = await getTranslations("common");
+  const tMat = await getTranslations("materials");
   const m = await prisma.material.findUnique({
     where: { id },
     include: {
@@ -74,6 +79,52 @@ export default async function MaterialDetailPage({
           </div>
         }
       />
+      <Card>
+        <CardContent className="pt-6">
+          <form
+            action={async (fd: FormData) => {
+              "use server";
+              await updateMaterialMeta(m.id, fd);
+            }}
+            className="grid grid-cols-1 gap-4 md:grid-cols-2"
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="track">{tMat("track")}</Label>
+              <Select id="track" name="track" defaultValue={m.track ?? ""}>
+                <option value="">{tMat("anyTrack")}</option>
+                {TRACK_ORDER.map((tr) => (
+                  <option key={tr} value={tr}>
+                    {tMat(`trackOptions.${tr}`)}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="subSection">{tMat("subSection")}</Label>
+              <Input
+                id="subSection"
+                name="subSection"
+                defaultValue={m.subSection ?? ""}
+                list="subsection-suggestions"
+              />
+              <datalist id="subsection-suggestions">
+                {Array.from(
+                  new Set(
+                    m.track && TRACK_SUBSECTIONS[m.track as MaterialTrack]
+                      ? TRACK_SUBSECTIONS[m.track as MaterialTrack]
+                      : Object.values(TRACK_SUBSECTIONS).flat(),
+                  ),
+                ).map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+            </div>
+            <div className="md:col-span-2">
+              <Button type="submit">{tCommon("save")}</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
       <Card>
         <CardContent className="space-y-3 pt-6">
           <h2 className="text-sm font-medium">Visibilidad</h2>

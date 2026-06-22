@@ -7,7 +7,13 @@ import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { createMaterial } from "@/server/actions/materials";
 import { getTranslations } from "next-intl/server";
-import { EnglishLevel, ExamType, MaterialCategory } from "@/lib/enums";
+import {
+  EnglishLevel,
+  ExamType,
+  MaterialCategory,
+  TRACK_ORDER,
+  TRACK_SUBSECTIONS,
+} from "@/lib/enums";
 
 export default async function NewMaterialPage() {
   const t = await getTranslations("materials");
@@ -68,6 +74,28 @@ export default async function NewMaterialPage() {
                   </option>
                 ))}
               </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="track">{t("track")}</Label>
+              <Select id="track" name="track" defaultValue="">
+                <option value="">{t("anyTrack")}</option>
+                {TRACK_ORDER.map((tr) => (
+                  <option key={tr} value={tr}>
+                    {t(`trackOptions.${tr}`)}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="subSection">{t("subSection")}</Label>
+              <Input id="subSection" name="subSection" list="subsection-suggestions" />
+              <datalist id="subsection-suggestions">
+                {Array.from(
+                  new Set(Object.values(TRACK_SUBSECTIONS).flat()),
+                ).map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
             </div>
             <div className="space-y-1.5 md:col-span-2">
               <Label htmlFor="worksheetId">Vincular a una ficha (opcional)</Label>

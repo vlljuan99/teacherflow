@@ -167,3 +167,94 @@ export const PlacementStatus = {
   SKIPPED: "SKIPPED",
 } as const;
 export type PlacementStatus = (typeof PlacementStatus)[keyof typeof PlacementStatus];
+
+export const MaterialTrack = {
+  ESO: "ESO",
+  BACHILLERATO: "BACHILLERATO",
+  CAMBRIDGE_B1: "CAMBRIDGE_B1",
+  CAMBRIDGE_B2: "CAMBRIDGE_B2",
+  CAMBRIDGE_C1: "CAMBRIDGE_C1",
+  APTIS: "APTIS",
+  ADULTS: "ADULTS",
+} as const;
+export type MaterialTrack = (typeof MaterialTrack)[keyof typeof MaterialTrack];
+
+export const TRACK_ORDER: MaterialTrack[] = [
+  MaterialTrack.ESO,
+  MaterialTrack.BACHILLERATO,
+  MaterialTrack.CAMBRIDGE_B1,
+  MaterialTrack.CAMBRIDGE_B2,
+  MaterialTrack.CAMBRIDGE_C1,
+  MaterialTrack.APTIS,
+  MaterialTrack.ADULTS,
+];
+
+export const TRACK_SUBSECTIONS: Record<MaterialTrack, string[]> = {
+  ESO: [
+    "1.º ESO",
+    "2.º ESO",
+    "3.º ESO",
+    "4.º ESO",
+    "Grammar basics",
+    "Vocabulary",
+    "Reading",
+    "Writing",
+    "Listening",
+    "Speaking",
+  ],
+  BACHILLERATO: [
+    "1.º Bachillerato",
+    "2.º Bachillerato",
+    "Selectividad / PEvAU",
+    "Writing practice",
+    "Rephrasing",
+  ],
+  CAMBRIDGE_B1: [
+    "Reading",
+    "Writing",
+    "Listening",
+    "Speaking",
+    "Use of English",
+    "Grammar bank",
+    "Vocabulary bank",
+    "Mock exams",
+    "Useful phrases",
+  ],
+  CAMBRIDGE_B2: [
+    "Reading & Use of English",
+    "Writing",
+    "Listening",
+    "Speaking",
+    "Transformations",
+    "Essay / Article / Review / Email",
+    "Mock exams",
+    "Common mistakes",
+  ],
+  CAMBRIDGE_C1: [
+    "Key word transformations",
+    "Advanced grammar",
+    "Essay writing",
+    "Speaking practice",
+    "Formal language",
+    "Collocations",
+    "Phrasal verbs",
+    "Mock exams",
+  ],
+  APTIS: [
+    "Grammar & Vocabulary",
+    "Speaking",
+    "Writing",
+    "Listening",
+    "Reading",
+    "Model answers",
+    "Exam strategies",
+  ],
+  ADULTS: [
+    "Grammar",
+    "Vocabulary",
+    "Conversation",
+    "Reading",
+    "Writing",
+    "Listening",
+  ],
+};

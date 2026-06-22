@@ -19,6 +19,7 @@ import {
   GraduationCap,
   TrendingUp,
   Sparkles,
+  Settings,
 } from "lucide-react";
 
 export interface NavItem {
@@ -37,6 +38,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/assignments", labelKey: "assignments", icon: ClipboardList },
   { href: "/payments", labelKey: "payments", icon: CreditCard },
   { href: "/materials", labelKey: "materials", icon: FolderOpen },
+  { href: "/settings/expression", labelKey: "settings", icon: Settings },
 ];
 
 export const STUDENT_NAV: NavItem[] = [

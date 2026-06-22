@@ -14,7 +14,7 @@ export default async function StudentLayout({
       <Sidebar items={STUDENT_NAV} />
       <div className="flex flex-1 flex-col">
         <Header userName={session.user.name ?? ""} userRole="Alumno" />
-        <main className="flex-1 overflow-y-auto bg-background p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

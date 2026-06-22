@@ -61,7 +61,8 @@
     "myClasses": "Mis clases",
     "myWorksheets": "Mis fichas",
     "myMaterials": "Materiales",
-    "myProgress": "Progreso"
+    "myProgress": "Progreso",
+    "settings": "Ajustes"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -85,7 +86,13 @@
     "pendingWorksheets": "Fichas pendientes",
     "lastGrades": "Últimas notas",
     "recentMaterials": "Materiales recientes",
-    "progress": "Progreso"
+    "progress": "Progreso",
+    "welcomeNote": "Aquí tienes tus materiales, tareas y próximas clases de inglés.",
+    "expressionOfWeek": "Expresión de la semana",
+    "expressionOfWeekEmpty": "Tu profesora aún no ha publicado la expresión de esta semana.",
+    "yourFolders": "Tus carpetas",
+    "openFolder": "Abrir carpeta",
+    "materialsCount": "{count, plural, =0 {Sin materiales} =1 {1 material} other {# materiales}}"
   },
   "students": {
     "title": "Alumnos",
@@ -319,6 +326,19 @@
       "TRINITY": "Trinity",
       "EOI": "EOI"
     },
+    "track": "Programa",
+    "subSection": "Apartado",
+    "anyTrack": "Sin programa",
+    "allMaterials": "Todos los materiales",
+    "trackOptions": {
+      "ESO": "ESO",
+      "BACHILLERATO": "Bachillerato",
+      "CAMBRIDGE_B1": "Cambridge B1",
+      "CAMBRIDGE_B2": "Cambridge B2",
+      "CAMBRIDGE_C1": "Cambridge C1",
+      "APTIS": "Aptis",
+      "ADULTS": "Adultos"
+    },
     "categoryOptions": {
       "GRAMMAR": "Gramática",
       "VOCABULARY": "Vocabulario",
@@ -334,6 +354,18 @@
       "PRESCHOOL": "Infantil",
       "CHALLENGES": "Retos / Actividades",
       "OTHER": "Otros"
+    }
+  },
+  "settings": {
+    "title": "Ajustes",
+    "expression": {
+      "title": "Expresión de la semana",
+      "intro": "Esta expresión aparece destacada en la página de inicio de tus alumnos.",
+      "expression": "Expresión",
+      "expressionPlaceholder": "p. ej. \"To hit the books\"",
+      "meaning": "Significado / explicación",
+      "meaningPlaceholder": "p. ej. Estudiar mucho, ponerse a empollar.",
+      "saved": "Guardada"
     }
   },
   "level": {

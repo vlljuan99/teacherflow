@@ -9,6 +9,7 @@ import {
   EnglishLevel,
   ExamType,
   MaterialCategory,
+  MaterialTrack,
 } from "@/lib/enums";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/server/auth/session";
@@ -31,6 +32,8 @@ const UploadSchema = z.object({
   level: z.nativeEnum(EnglishLevel).optional().nullable(),
   examType: z.nativeEnum(ExamType).optional().nullable(),
   category: z.nativeEnum(MaterialCategory).default(MaterialCategory.OTHER),
+  track: z.nativeEnum(MaterialTrack).optional().nullable(),
+  subSection: z.string().max(120).optional().nullable(),
 });
 
 export async function createMaterial(formData: FormData) {
@@ -45,6 +48,8 @@ export async function createMaterial(formData: FormData) {
     level: optionalString(formData.get("level")),
     examType: optionalString(formData.get("examType")),
     category: optionalString(formData.get("category")) ?? MaterialCategory.OTHER,
+    track: optionalString(formData.get("track")),
+    subSection: optionalString(formData.get("subSection")),
   });
   const saved = await storeUploadedFile(file, { prefix: "materials" });
   const type = detectMaterialType(saved.mime);
@@ -61,6 +66,8 @@ export async function createMaterial(formData: FormData) {
       level: meta.level ?? null,
       examType: meta.examType ?? null,
       category: meta.category,
+      track: meta.track ?? null,
+      subSection: meta.subSection ?? null,
       uploadedById: session.user.id,
     },
   });
@@ -80,6 +87,35 @@ export async function createMaterial(formData: FormData) {
   });
   revalidatePath("/materials");
   redirect(`/materials`);
+}
+
+const MetaSchema = z.object({
+  track: z.nativeEnum(MaterialTrack).optional().nullable(),
+  subSection: z.string().max(120).optional().nullable(),
+});
+
+export async function updateMaterialMeta(id: string, formData: FormData) {
+  const session = await requireRole(Role.TEACHER);
+  const meta = MetaSchema.parse({
+    track: optionalString(formData.get("track")),
+    subSection: optionalString(formData.get("subSection")),
+  });
+  await prisma.material.update({
+    where: { id },
+    data: {
+      track: meta.track ?? null,
+      subSection: meta.subSection ?? null,
+    },
+  });
+  await audit({
+    actorUserId: session.user.id,
+    action: "material.update_meta",
+    entity: "Material",
+    entityId: id,
+  });
+  revalidatePath(`/materials/${id}`);
+  revalidatePath(`/portal/materials`);
+  revalidatePath(`/portal/dashboard`);
 }
 
 export async function deleteMaterial(id: string) {

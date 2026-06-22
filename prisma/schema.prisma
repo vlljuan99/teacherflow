@@ -326,6 +326,8 @@ model Material {
   level        String?                       // A1..C2 (null = any)
   examType     String?                       // APTIS, CAMBRIDGE_PET, ... (null = none)
   category     String   @default("OTHER")    // GRAMMAR, READING, WORKBOOK, ...
+  track        String?                       // ESO, BACHILLERATO, CAMBRIDGE_B1/B2/C1, APTIS, ADULTS
+  subSection   String?                       // free-text sub-folder inside a track
   sourceUrl    String?                       // optional original (e.g. Drive file id)
   sourceTopic  String?                       // free-text topic from import (Classroom)
   uploadedById String
@@ -340,6 +342,14 @@ model Material {
   @@index([level])
   @@index([examType])
   @@index([category])
+  @@index([track])
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 }
 
 model MaterialLink {
