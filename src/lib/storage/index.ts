@@ -110,6 +110,21 @@ export function azureReadUrl(blobName: string, expiryMinutes = 15): string {
   return generateReadSasUrl(blobName, expiryMinutes);
 }
 
+export async function readStoredBytes(file: {
+  storage: string;
+  blobName: string | null;
+  filePath: string;
+}): Promise<Buffer> {
+  if (file.storage === StorageBackend.AZURE && file.blobName) {
+    const url = generateReadSasUrl(file.blobName, 10);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Azure blob download failed: ${res.status}`);
+    return Buffer.from(await res.arrayBuffer());
+  }
+  const { readFile } = await import("node:fs/promises");
+  return readFile(resolveLocalPath(file.filePath));
+}
+
 export async function removeStored(file: {
   storage: string;
   blobName: string | null;

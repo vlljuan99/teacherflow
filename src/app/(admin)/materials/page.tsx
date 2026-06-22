@@ -5,10 +5,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Download, Cloud } from "lucide-react";
+import { Plus, Download, Cloud, Wand2, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { EnglishLevel, ExamType, MaterialCategory } from "@/lib/enums";
 import { MaterialFilters } from "@/components/materials/material-filters";
+import { convertPdfToWorksheet } from "@/server/actions/pdf-convert";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export default async function MaterialsPage({
   const materials = await prisma.material.findMany({
     where,
     orderBy: [{ category: "asc" }, { createdAt: "desc" }],
+    include: { pdfImport: { select: { worksheetId: true } } },
   });
 
   const grouped = new Map<string, typeof materials>();
@@ -96,7 +98,10 @@ export default async function MaterialsPage({
                   </span>
                 </h2>
                 <ul className="divide-y">
-                  {items.map((m) => (
+                  {items.map((m) => {
+                    const isPdf = m.type === "PDF" || m.mime === "application/pdf";
+                    const existingWorksheetId = m.pdfImport?.worksheetId;
+                    return (
                     <li key={m.id} className="flex items-center justify-between gap-3 py-2.5">
                       <div className="min-w-0 flex-1">
                         <Link
@@ -120,16 +125,39 @@ export default async function MaterialsPage({
                           </span>
                         </div>
                       </div>
-                      <a
-                        href={`/api/files/${m.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="shrink-0 text-sm text-primary hover:underline"
-                      >
-                        <Download className="inline h-3.5 w-3.5" /> {tCommon("open")}
-                      </a>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {isPdf && (
+                          existingWorksheetId ? (
+                            <Link href={`/worksheets/${existingWorksheetId}/review`}>
+                              <Button variant="outline" size="sm">
+                                <FileText className="h-3.5 w-3.5" /> Ver ficha
+                              </Button>
+                            </Link>
+                          ) : (
+                            <form
+                              action={async () => {
+                                "use server";
+                                await convertPdfToWorksheet(m.id);
+                              }}
+                            >
+                              <Button type="submit" variant="outline" size="sm">
+                                <Wand2 className="h-3.5 w-3.5" /> Crear ficha IA
+                              </Button>
+                            </form>
+                          )
+                        )}
+                        <a
+                          href={`/api/files/${m.id}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="shrink-0 text-sm text-primary hover:underline"
+                        >
+                          <Download className="inline h-3.5 w-3.5" /> {tCommon("open")}
+                        </a>
+                      </div>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </CardContent>
             </Card>
