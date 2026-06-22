@@ -51,7 +51,9 @@ node node_modules/prisma/build/index.js db push --accept-data-loss --skip-genera
 echo "==> Arrancando servidor..."
 exec node server.js
 EOF
-RUN chmod +x /app/entrypoint.sh
+# git-archive on Windows can leave CRLF in the Dockerfile heredoc body; strip them
+# so the kernel can find /bin/sh on the shebang line.
+RUN sed -i 's/\r$//' /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 USER nextjs
 EXPOSE 3000
