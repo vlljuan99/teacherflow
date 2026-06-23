@@ -352,6 +352,34 @@ model SiteSetting {
   createdAt DateTime @default(now())
 }
 
+model ClassReminderSent {
+  id         String   @id @default(cuid())
+  classId    String
+  studentId  String
+  kind       String   @default("DAY_BEFORE")
+  sentAt     DateTime @default(now())
+
+  @@unique([classId, studentId, kind])
+  @@index([sentAt])
+}
+
+model SpeakingQuestion {
+  id        String   @id @default(cuid())
+  prompt    String
+  level     String?  // A1..C2
+  track     String?  // optional MaterialTrack
+  category  String?  // free-form (e.g. "Daily life", "Travel")
+  points    Int      @default(1)
+  twist     String?  // null | DOUBLE | STEAL | SWAP | LOSE
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([level])
+  @@index([track])
+  @@index([isActive])
+}
+
 model MaterialLink {
   id          String     @id @default(cuid())
   materialId  String

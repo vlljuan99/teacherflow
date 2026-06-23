@@ -189,6 +189,14 @@ export const TRACK_ORDER: MaterialTrack[] = [
   MaterialTrack.ADULTS,
 ];
 
+export const SpeakingTwist = {
+  DOUBLE: "DOUBLE",
+  STEAL: "STEAL",
+  SWAP: "SWAP",
+  LOSE: "LOSE",
+} as const;
+export type SpeakingTwist = (typeof SpeakingTwist)[keyof typeof SpeakingTwist];
+
 export const TRACK_SUBSECTIONS: Record<MaterialTrack, string[]> = {
   ESO: [
     "1.º ESO",

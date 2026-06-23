@@ -62,7 +62,10 @@
     "myWorksheets": "My worksheets",
     "myMaterials": "Materials",
     "myProgress": "Progress",
-    "settings": "Settings"
+    "settings": "Settings",
+    "expression": "Weekly expression",
+    "reminders": "Reminders",
+    "speaking": "Speaking Corner"
   },
   "auth": {
     "login": "Sign in",
@@ -366,7 +369,55 @@
       "meaning": "Meaning / explanation",
       "meaningPlaceholder": "e.g. To study hard, to start studying intensively.",
       "saved": "Saved"
+    },
+    "reminders": {
+      "title": "Email reminders",
+      "intro": "Students get a daily email about classes happening the next day.",
+      "smtpConfigured": "SMTP configured.",
+      "smtpMissing": "SMTP not configured.",
+      "smtpHelp": "Set SMTP_HOST, SMTP_USER and SMTP_PASS in .env (cheapest: Gmail App Password).",
+      "classesTomorrow": "Classes tomorrow",
+      "sentToday": "Emails sent today",
+      "sendNow": "Send now",
+      "autoNote": "The daily cron sends reminders automatically."
     }
+  },
+  "speaking": {
+    "title": "Speaking Corner",
+    "intro": "Team game in Bamboozle style: answer, score points, watch out for the twists!",
+    "adminTitle": "Question bank",
+    "adminIntro": "These questions are shown in the students' Speaking Corner.",
+    "newQuestion": "New question",
+    "editQuestion": "Edit question",
+    "prompt": "Question",
+    "promptPlaceholder": "e.g. Describe your perfect weekend.",
+    "category": "Topic (free text)",
+    "categoryPlaceholder": "e.g. Travel, School, Hobbies…",
+    "points": "Points",
+    "twist": "Twist (optional)",
+    "twistNone": "No twist",
+    "active": "Active question",
+    "twistOptions": {
+      "DOUBLE": "Double (×2)",
+      "STEAL": "Steal points",
+      "SWAP": "Swap scoreboards",
+      "LOSE": "Lose points"
+    },
+    "emptyHelp": "Ask your teacher to add questions to the bank.",
+    "team1": "Team A",
+    "team2": "Team B",
+    "currentTurn": "Their turn",
+    "correct": "Correct",
+    "wrong": "Wrong",
+    "skip": "Skip",
+    "next": "Draw question",
+    "reset": "Reset game",
+    "startOver": "Play again",
+    "pointsAbbr": "pts",
+    "winner": "wins",
+    "tie": "It's a tie!",
+    "finalScore": "Final score",
+    "questionsLeft": "Questions left"
   },
   "level": {
     "A1": "A1",

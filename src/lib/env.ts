@@ -14,6 +14,13 @@ const envSchema = z.object({
   GOOGLE_API_KEY: z.string().optional(),
   AI_EMBED_MODEL: z.string().default("text-embedding-3-small"),
   AI_EXTRACT_MODEL: z.string().default("gemini-2.5-flash"),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
+  APP_URL: z.string().url().optional(),
+  CRON_SECRET: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

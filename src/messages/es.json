@@ -62,7 +62,10 @@
     "myWorksheets": "Mis fichas",
     "myMaterials": "Materiales",
     "myProgress": "Progreso",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "expression": "Expresión semanal",
+    "reminders": "Recordatorios",
+    "speaking": "Speaking Corner"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -366,7 +369,55 @@
       "meaning": "Significado / explicación",
       "meaningPlaceholder": "p. ej. Estudiar mucho, ponerse a empollar.",
       "saved": "Guardada"
+    },
+    "reminders": {
+      "title": "Recordatorios por email",
+      "intro": "Cada día se envía a tus alumnos un email con las clases que tienen al día siguiente.",
+      "smtpConfigured": "SMTP configurado correctamente.",
+      "smtpMissing": "SMTP no configurado.",
+      "smtpHelp": "Rellena SMTP_HOST, SMTP_USER y SMTP_PASS en .env (lo más barato: Gmail App Password).",
+      "classesTomorrow": "Clases mañana",
+      "sentToday": "Emails enviados hoy",
+      "sendNow": "Enviar ahora",
+      "autoNote": "El cron diario envía los recordatorios automáticamente."
     }
+  },
+  "speaking": {
+    "title": "Speaking Corner",
+    "intro": "Juego por equipos al estilo Bamboozle: responde, gana puntos, ¡cuidado con los twists!",
+    "adminTitle": "Banco de preguntas",
+    "adminIntro": "Estas preguntas aparecen en el Speaking Corner de los alumnos.",
+    "newQuestion": "Nueva pregunta",
+    "editQuestion": "Editar pregunta",
+    "prompt": "Pregunta",
+    "promptPlaceholder": "p. ej. Describe your perfect weekend.",
+    "category": "Tema (libre)",
+    "categoryPlaceholder": "p. ej. Travel, School, Hobbies…",
+    "points": "Puntos",
+    "twist": "Twist (opcional)",
+    "twistNone": "Sin twist",
+    "active": "Pregunta activa",
+    "twistOptions": {
+      "DOUBLE": "Doble (×2)",
+      "STEAL": "Robar puntos",
+      "SWAP": "Intercambiar marcadores",
+      "LOSE": "Perder puntos"
+    },
+    "emptyHelp": "Pídele a tu profesora que añada preguntas al banco.",
+    "team1": "Equipo A",
+    "team2": "Equipo B",
+    "currentTurn": "Su turno",
+    "correct": "Bien",
+    "wrong": "Mal",
+    "skip": "Saltar",
+    "next": "Sacar pregunta",
+    "reset": "Reiniciar partida",
+    "startOver": "Otra partida",
+    "pointsAbbr": "pts",
+    "winner": "gana",
+    "tie": "¡Empate!",
+    "finalScore": "Marcador final",
+    "questionsLeft": "Preguntas restantes"
   },
   "level": {
     "A1": "A1",

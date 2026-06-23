@@ -20,6 +20,8 @@ import {
   TrendingUp,
   Sparkles,
   Settings,
+  Mail,
+  MessageSquare,
 } from "lucide-react";
 
 export interface NavItem {
@@ -38,7 +40,9 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/assignments", labelKey: "assignments", icon: ClipboardList },
   { href: "/payments", labelKey: "payments", icon: CreditCard },
   { href: "/materials", labelKey: "materials", icon: FolderOpen },
-  { href: "/settings/expression", labelKey: "settings", icon: Settings },
+  { href: "/settings/expression", labelKey: "expression", icon: Sparkles },
+  { href: "/settings/reminders", labelKey: "reminders", icon: Mail },
+  { href: "/settings/speaking", labelKey: "speaking", icon: MessageSquare },
 ];
 
 export const STUDENT_NAV: NavItem[] = [
@@ -46,6 +50,7 @@ export const STUDENT_NAV: NavItem[] = [
   { href: "/portal/classes", labelKey: "myClasses", icon: CalendarDays },
   { href: "/portal/worksheets", labelKey: "myWorksheets", icon: FileText },
   { href: "/portal/materials", labelKey: "myMaterials", icon: FolderOpen },
+  { href: "/portal/speaking", labelKey: "speaking", icon: MessageSquare },
   { href: "/portal/progress", labelKey: "myProgress", icon: TrendingUp },
 ];
 
