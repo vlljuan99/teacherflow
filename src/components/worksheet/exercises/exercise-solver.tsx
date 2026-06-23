@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
 import { ExerciseType } from "@/lib/enums";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { DndOrderWords } from "./dnd-order-words";
+import { DndMatchColumns } from "./dnd-match-columns";
 
 export interface ExerciseInput {
   id: string;
@@ -19,19 +19,6 @@ export interface ExerciseInput {
 }
 
 export type AnswerValue = Record<string, unknown>;
-
-function shuffle<T>(arr: T[], seed: string): { value: T; originalIndex: number }[] {
-  // Deterministic shuffle so the order is stable per exercise id
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  const indexed = arr.map((v, i) => ({ value: v, originalIndex: i }));
-  for (let i = indexed.length - 1; i > 0; i--) {
-    h = (h * 9301 + 49297) % 233280;
-    const j = h % (i + 1);
-    [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
-  }
-  return indexed;
-}
 
 export function ExerciseSolver({
   exercise,
@@ -49,13 +36,6 @@ export function ExerciseSolver({
   const update = (next: AnswerValue) => {
     if (!readOnly && onChange) onChange(next);
   };
-
-  // Compute deterministic shuffle once so it's stable across renders.
-  const wordsForShuffle = (exercise.payload.words as string[] | undefined) ?? [];
-  const shuffledWords = useMemo(
-    () => shuffle(wordsForShuffle, exercise.id),
-    [exercise.id, wordsForShuffle],
-  );
 
   switch (exercise.type) {
     case ExerciseType.MULTIPLE_CHOICE: {
@@ -123,22 +103,31 @@ export function ExerciseSolver({
       const blanksCount = parts.length - 1;
       const answers = ((value?.answers as string[]) ?? []) as string[];
       return (
-        <p className="leading-9">
+        <p className="leading-10 text-base">
           {parts.map((part, i) => (
             <span key={i}>
               {part}
               {i < blanksCount && (
-                <input
-                  type="text"
-                  disabled={readOnly}
-                  value={answers[i] ?? ""}
-                  onChange={(e) => {
-                    const next = [...answers];
-                    next[i] = e.target.value;
-                    update({ answers: next });
-                  }}
-                  className="mx-1 inline-block w-32 rounded border-b border-input bg-transparent px-2 focus:outline-none focus:ring-2 focus:ring-ring"
-                />
+                <span className="mx-1 inline-flex items-baseline align-baseline">
+                  <span className="mr-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-semibold text-primary">
+                    {i + 1}
+                  </span>
+                  <input
+                    type="text"
+                    disabled={readOnly}
+                    value={answers[i] ?? ""}
+                    onChange={(e) => {
+                      const next = [...answers];
+                      next[i] = e.target.value;
+                      update({ answers: next });
+                    }}
+                    className={cn(
+                      "inline-block min-w-[5rem] rounded-md border border-input bg-card px-2 py-0.5 text-sm font-medium text-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring",
+                      (answers[i] ?? "").length > 0 && "border-primary/60 bg-primary/5",
+                    )}
+                    style={{ width: `${Math.max(5, (answers[i]?.length ?? 0) + 2)}ch` }}
+                  />
+                </span>
               )}
             </span>
           ))}
@@ -158,80 +147,28 @@ export function ExerciseSolver({
       const left = (exercise.payload.left as string[]) ?? [];
       const right = (exercise.payload.right as string[]) ?? [];
       const pairs = ((value?.pairs as number[][]) ?? []) as number[][];
-      const setRightFor = (l: number, r: number) => {
-        const others = pairs.filter((p) => p[0] !== l);
-        update({ pairs: [...others, [l, r]] });
-      };
       return (
-        <div className="space-y-2">
-          {left.map((l, i) => {
-            const current = pairs.find((p) => p[0] === i)?.[1];
-            return (
-              <div key={i} className="flex items-center gap-2">
-                <span className="w-1/3 truncate">{l}</span>
-                <span>→</span>
-                <Select
-                  disabled={readOnly}
-                  value={current != null ? String(current) : ""}
-                  onChange={(e) => setRightFor(i, Number(e.target.value))}
-                  className="flex-1"
-                >
-                  <option value="">—</option>
-                  {right.map((r, k) => (
-                    <option key={k} value={k}>
-                      {r}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            );
-          })}
-        </div>
+        <DndMatchColumns
+          exerciseId={exercise.id}
+          left={left}
+          right={right}
+          pairs={pairs}
+          readOnly={readOnly}
+          onChange={(next) => update({ pairs: next })}
+        />
       );
     }
     case ExerciseType.ORDER_WORDS: {
-      const words = wordsForShuffle;
+      const words = (exercise.payload.words as string[] | undefined) ?? [];
       const order = ((value?.order as number[]) ?? []) as number[];
-      const remaining = shuffledWords.filter((w) => !order.includes(w.originalIndex));
       return (
-        <div className="space-y-3">
-          <div className="min-h-[40px] rounded-md border border-dashed bg-muted/30 p-2 text-sm">
-            {order.length === 0 ? (
-              <span className="text-muted-foreground">—</span>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {order.map((origIdx, posIdx) => (
-                  <Button
-                    key={posIdx}
-                    type="button"
-                    size="sm"
-                    variant="default"
-                    disabled={readOnly}
-                    onClick={() =>
-                      update({ order: order.filter((_, i) => i !== posIdx) })
-                    }
-                  >
-                    {words[origIdx]}
-                  </Button>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {remaining.map((w) => (
-              <Button
-                key={w.originalIndex}
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={readOnly}
-                onClick={() => update({ order: [...order, w.originalIndex] })}
-              >
-                {w.value}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <DndOrderWords
+          exerciseId={exercise.id}
+          words={words}
+          order={order}
+          readOnly={readOnly}
+          onChange={(next) => update({ order: next })}
+        />
       );
     }
     case ExerciseType.READING:
