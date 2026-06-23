@@ -148,6 +148,36 @@ export async function StudentForm({
         />
         <Label htmlFor="isMinor">{t("isMinor")}</Label>
       </div>
+
+      <div className="space-y-2 rounded-lg border bg-card/50 p-4 md:col-span-2">
+        <Label>{t("notifications")}</Label>
+        <p className="text-xs text-muted-foreground">{t("notifyHint")}</p>
+        <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:gap-6">
+          <label htmlFor="notifyEmail" className="flex items-center gap-2 text-sm">
+            <input
+              id="notifyEmail"
+              name="notifyEmail"
+              type="checkbox"
+              defaultChecked={student?.notifyEmail ?? true}
+              className="h-4 w-4 rounded border-input"
+            />
+            {t("notifyEmail")}
+          </label>
+          <label
+            htmlFor="notifyWhatsapp"
+            className="flex items-center gap-2 text-sm"
+          >
+            <input
+              id="notifyWhatsapp"
+              name="notifyWhatsapp"
+              type="checkbox"
+              defaultChecked={student?.notifyWhatsapp ?? false}
+              className="h-4 w-4 rounded border-input"
+            />
+            {t("notifyWhatsapp")}
+          </label>
+        </div>
+      </div>
       <div className="space-y-1.5 md:col-span-2">
         <Label htmlFor="notes">{t("notes")}</Label>
         <Textarea

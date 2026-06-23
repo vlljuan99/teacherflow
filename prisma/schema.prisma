@@ -51,6 +51,8 @@ model Student {
   lastName  String
   email     String?
   phone     String?
+  notifyEmail    Boolean @default(true)
+  notifyWhatsapp Boolean @default(false)
   birthDate DateTime?
   level     String    @default("A1")
   status    String    @default("ACTIVE")
@@ -357,9 +359,10 @@ model ClassReminderSent {
   classId    String
   studentId  String
   kind       String   @default("DAY_BEFORE")
+  channel    String   @default("EMAIL")
   sentAt     DateTime @default(now())
 
-  @@unique([classId, studentId, kind])
+  @@unique([classId, studentId, kind, channel])
   @@index([sentAt])
 }
 

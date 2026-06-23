@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { env } from "@/lib/env";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
+import { sendWhatsAppTemplate, isWhatsAppConfigured } from "@/lib/whatsapp";
 import { APP_TIME_ZONE } from "@/lib/timezone";
 
 export interface ReminderResult {
@@ -8,7 +9,11 @@ export interface ReminderResult {
   skipped: number;
   errors: number;
   classes: number;
+  emailSent: number;
+  whatsappSent: number;
 }
+
+type Channel = "EMAIL" | "WHATSAPP";
 
 // Target window: classes whose startAt falls between (now + WINDOW_MIN_MIN)
 // and (now + WINDOW_MAX_MIN). The window is sized so a 15-min cron cadence
@@ -110,52 +115,84 @@ function buildEmail(
 }
 
 /**
- * Sends a reminder email ~30 min before each class. Idempotent via
- * ClassReminderSent (kind = "T_MINUS_30"). Designed to be triggered by an
- * external cron running every 5–15 minutes.
+ * Body parameters for the approved WhatsApp template ("class_reminder").
+ * Positional, mapped to {{1}} {{2}} {{3}}. The template only announces the
+ * soonest class (templates can't iterate), so one message covers the batch.
+ *
+ * Recommended template text (submit this in the Meta dashboard):
+ *   Hi {{1}}! Your English class "{{2}}" starts at {{3}}. See you soon! 👋
+ */
+function buildWhatsAppParams(
+  studentName: string,
+  next: { title: string; startAt: Date },
+): string[] {
+  const firstName = studentName.split(" ")[0] || "there";
+  return [firstName, next.title, formatMadridTime(next.startAt)];
+}
+
+/**
+ * Sends a reminder ~30 min before each class through every channel the student
+ * has opted into (email and/or WhatsApp). Idempotent per channel via
+ * ClassReminderSent (kind = "T_MINUS_30", channel = "EMAIL" | "WHATSAPP").
+ * Designed to be triggered by an external cron running every 5–15 minutes.
  */
 export async function runClassReminders(): Promise<ReminderResult> {
-  const result: ReminderResult = { sent: 0, skipped: 0, errors: 0, classes: 0 };
-  if (!isEmailConfigured()) {
-    console.warn("[reminders] SMTP not configured — skipping.");
+  const result: ReminderResult = {
+    sent: 0,
+    skipped: 0,
+    errors: 0,
+    classes: 0,
+    emailSent: 0,
+    whatsappSent: 0,
+  };
+  const emailOn = isEmailConfigured();
+  const whatsappOn = isWhatsAppConfigured();
+  if (!emailOn && !whatsappOn) {
+    console.warn("[reminders] no channel configured (SMTP/WhatsApp) — skipping.");
     return result;
   }
   const now = new Date();
   const windowStart = new Date(now.getTime() + WINDOW_MIN_MIN * 60_000);
   const windowEnd = new Date(now.getTime() + WINDOW_MAX_MIN * 60_000);
 
+  const studentSelect = {
+    id: true,
+    firstName: true,
+    lastName: true,
+    email: true,
+    phone: true,
+    notifyEmail: true,
+    notifyWhatsapp: true,
+  } as const;
+
   const classes = await prisma.class.findMany({
     where: { startAt: { gte: windowStart, lte: windowEnd } },
     include: {
-      student: { select: { id: true, firstName: true, lastName: true, email: true } },
-      group: {
-        include: {
-          students: {
-            select: { id: true, firstName: true, lastName: true, email: true },
-          },
-        },
-      },
+      student: { select: studentSelect },
+      group: { include: { students: { select: studentSelect } } },
     },
     orderBy: { startAt: "asc" },
   });
   result.classes = classes.length;
 
-  // group by studentId
+  type StudentInfo = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string | null;
+    phone: string | null;
+    notifyEmail: boolean;
+    notifyWhatsapp: boolean;
+  };
+
+  // group by studentId (classes stay sorted asc since the source is sorted)
   const byStudent = new Map<
     string,
-    {
-      student: { id: string; firstName: string; lastName: string; email: string | null };
-      classes: typeof classes;
-    }
+    { student: StudentInfo; classes: typeof classes }
   >();
   for (const c of classes) {
-    const studs = c.student
-      ? [c.student]
-      : c.group
-        ? c.group.students
-        : [];
+    const studs = c.student ? [c.student] : c.group ? c.group.students : [];
     for (const s of studs) {
-      if (!s.email) continue;
       let bucket = byStudent.get(s.id);
       if (!bucket) {
         bucket = { student: s, classes: [] };
@@ -166,49 +203,82 @@ export async function runClassReminders(): Promise<ReminderResult> {
   }
 
   for (const { student, classes: studentClasses } of byStudent.values()) {
-    // Skip classes already reminded for this kind.
-    const alreadySent = await prisma.classReminderSent.findMany({
-      where: {
-        studentId: student.id,
-        kind: REMINDER_KIND,
-        classId: { in: studentClasses.map((c) => c.id) },
-      },
-      select: { classId: true },
-    });
-    const sentSet = new Set(alreadySent.map((r) => r.classId));
-    const fresh = studentClasses.filter((c) => !sentSet.has(c.id));
-    if (fresh.length === 0) {
+    // Which channels are enabled, configured and have a destination?
+    const channels: Channel[] = [];
+    if (emailOn && student.notifyEmail && student.email) channels.push("EMAIL");
+    if (whatsappOn && student.notifyWhatsapp && student.phone)
+      channels.push("WHATSAPP");
+    if (channels.length === 0) {
       result.skipped++;
       continue;
     }
-    try {
-      const { subject, html, text } = buildEmail(
-        `${student.firstName} ${student.lastName}`.trim(),
-        fresh.map((c) => ({
-          title: c.title,
-          startAt: c.startAt,
-          meetLink: c.meetLink,
-          location: c.location,
-        })),
-        now,
-      );
-      const ok = await sendEmail({ to: student.email!, subject, html, text });
-      if (!ok) {
+
+    for (const channel of channels) {
+      // Per-channel idempotency: skip classes already reminded on this channel.
+      const alreadySent = await prisma.classReminderSent.findMany({
+        where: {
+          studentId: student.id,
+          kind: REMINDER_KIND,
+          channel,
+          classId: { in: studentClasses.map((c) => c.id) },
+        },
+        select: { classId: true },
+      });
+      const sentSet = new Set(alreadySent.map((r) => r.classId));
+      const fresh = studentClasses.filter((c) => !sentSet.has(c.id));
+      if (fresh.length === 0) {
         result.skipped++;
         continue;
       }
-      await prisma.classReminderSent.createMany({
-        data: fresh.map((c) => ({
-          classId: c.id,
-          studentId: student.id,
-          kind: REMINDER_KIND,
-        })),
-        skipDuplicates: true,
-      });
-      result.sent++;
-    } catch (err) {
-      console.error("[reminders] failed for student", student.id, err);
-      result.errors++;
+
+      try {
+        let ok = false;
+        if (channel === "EMAIL") {
+          const { subject, html, text } = buildEmail(
+            `${student.firstName} ${student.lastName}`.trim(),
+            fresh.map((c) => ({
+              title: c.title,
+              startAt: c.startAt,
+              meetLink: c.meetLink,
+              location: c.location,
+            })),
+            now,
+          );
+          ok = await sendEmail({ to: student.email!, subject, html, text });
+        } else {
+          ok = await sendWhatsAppTemplate({
+            to: student.phone!,
+            bodyParams: buildWhatsAppParams(
+              `${student.firstName} ${student.lastName}`.trim(),
+              fresh[0],
+            ),
+          });
+        }
+
+        if (!ok) {
+          result.skipped++;
+          continue;
+        }
+        await prisma.classReminderSent.createMany({
+          data: fresh.map((c) => ({
+            classId: c.id,
+            studentId: student.id,
+            kind: REMINDER_KIND,
+            channel,
+          })),
+          skipDuplicates: true,
+        });
+        result.sent++;
+        if (channel === "EMAIL") result.emailSent++;
+        else result.whatsappSent++;
+      } catch (err) {
+        console.error(
+          `[reminders] ${channel} failed for student`,
+          student.id,
+          err,
+        );
+        result.errors++;
+      }
     }
   }
 
