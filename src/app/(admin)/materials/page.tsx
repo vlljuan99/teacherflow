@@ -5,11 +5,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Download, Cloud, Wand2, FileText } from "lucide-react";
+import { Plus, Download, Cloud, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { EnglishLevel, ExamType, MaterialCategory } from "@/lib/enums";
 import { MaterialFilters } from "@/components/materials/material-filters";
-import { convertPdfToWorksheet } from "@/server/actions/pdf-convert";
+import { ConvertPdfButton } from "@/components/materials/convert-pdf-button";
 
 export const dynamic = "force-dynamic";
 
@@ -134,16 +134,7 @@ export default async function MaterialsPage({
                               </Button>
                             </Link>
                           ) : (
-                            <form
-                              action={async () => {
-                                "use server";
-                                await convertPdfToWorksheet(m.id);
-                              }}
-                            >
-                              <Button type="submit" variant="outline" size="sm">
-                                <Wand2 className="h-3.5 w-3.5" /> Crear ficha IA
-                              </Button>
-                            </form>
+                            <ConvertPdfButton materialId={m.id} />
                           )
                         )}
                         <a

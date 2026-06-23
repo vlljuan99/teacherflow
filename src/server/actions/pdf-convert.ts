@@ -150,6 +150,26 @@ function levelFallback(
   return EnglishLevel.B1;
 }
 
+/**
+ * Safe wrapper around convertPdfToWorksheet for use from Client Components.
+ * Returns {error} on failure instead of throwing, so the UI can display a
+ * friendly message. Redirect errors are re-thrown so Next.js navigation works.
+ */
+export async function convertPdfToWorksheetSafe(
+  materialId: string,
+): Promise<{ error: string } | void> {
+  try {
+    await convertPdfToWorksheet(materialId);
+  } catch (err) {
+    if ((err as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) throw err;
+    console.error("[pdf-convert] error:", err);
+    if (err instanceof Error && err.message.includes("GOOGLE_API_KEY")) {
+      return { error: "Servicio IA no configurado. Contacta con el administrador." };
+    }
+    return { error: "No se pudo procesar el PDF. Inténtalo de nuevo en un momento." };
+  }
+}
+
 function addSectionTag(payloadJson: string, sectionTitle: string): string {
   try {
     const obj = JSON.parse(payloadJson) as Record<string, unknown>;
