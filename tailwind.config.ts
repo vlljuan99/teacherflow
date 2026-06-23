@@ -48,9 +48,33 @@ const config: Config = {
         },
       },
       borderRadius: {
+        sm: "calc(var(--radius) - 6px)",
+        md: "calc(var(--radius) - 4px)",
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 4px)",
+        "2xl": "calc(var(--radius) + 8px)",
+      },
+      fontFamily: {
+        sans: [
+          "var(--font-sans)",
+          "system-ui",
+          "-apple-system",
+          "Segoe UI",
+          "sans-serif",
+        ],
+      },
+      boxShadow: {
+        soft: "0 1px 2px 0 rgba(79, 70, 114, 0.05), 0 6px 20px -6px rgba(79, 70, 114, 0.12)",
+        elevated: "0 1px 3px 0 rgba(79, 70, 114, 0.06), 0 10px 30px -8px rgba(79, 70, 114, 0.14)",
+      },
+      keyframes: {
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-in-up": "fade-in-up 0.4s ease-out both",
       },
     },
   },

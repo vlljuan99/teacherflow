@@ -14,7 +14,9 @@ export default async function AdminLayout({
       <Sidebar items={ADMIN_NAV} />
       <div className="flex flex-1 flex-col">
         <Header userName={session.user.name ?? ""} userRole="Profesora" />
-        <main className="flex-1 overflow-y-auto bg-background p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="animate-fade-in-up">{children}</div>
+        </main>
       </div>
     </div>
   );

@@ -15,8 +15,8 @@ export default async function StudentLayout({
       <Sidebar items={STUDENT_NAV} />
       <div className="flex flex-1 flex-col">
         <Header userName={session.user.name ?? ""} userRole="Alumno" />
-        <main className="flex-1 overflow-y-auto bg-background p-4 pb-24 sm:p-6 md:pb-6">
-          {children}
+        <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 md:pb-6">
+          <div className="animate-fade-in-up">{children}</div>
         </main>
       </div>
       <MobileNav items={STUDENT_NAV} />

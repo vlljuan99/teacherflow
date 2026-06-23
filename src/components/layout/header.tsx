@@ -13,7 +13,7 @@ export async function Header({
 }) {
   const t = await getTranslations("common");
   return (
-    <header className="flex items-center justify-between border-b bg-card px-6 py-3">
+    <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-card/70 px-6 py-3 backdrop-blur-xl">
       <div className="text-sm text-muted-foreground">
         {userName} · <span className="font-medium text-foreground">{userRole}</span>
       </div>
