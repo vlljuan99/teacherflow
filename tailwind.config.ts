@@ -62,10 +62,11 @@ const config: Config = {
           "Segoe UI",
           "sans-serif",
         ],
+        serif: ["var(--font-serif)", "Georgia", "Cambria", "serif"],
       },
       boxShadow: {
-        soft: "0 1px 2px 0 rgba(79, 70, 114, 0.05), 0 6px 20px -6px rgba(79, 70, 114, 0.12)",
-        elevated: "0 1px 3px 0 rgba(79, 70, 114, 0.06), 0 10px 30px -8px rgba(79, 70, 114, 0.14)",
+        soft: "0 1px 2px 0 rgba(74, 47, 40, 0.05), 0 6px 20px -6px rgba(74, 47, 40, 0.12)",
+        elevated: "0 1px 3px 0 rgba(74, 47, 40, 0.06), 0 12px 30px -8px rgba(74, 47, 40, 0.15)",
       },
       keyframes: {
         "fade-in-up": {

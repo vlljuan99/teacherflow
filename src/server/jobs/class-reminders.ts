@@ -90,7 +90,7 @@ function buildEmail(
           ? `<p style="margin:24px 0 0;font-size:14px"><a href="${portalUrl}" style="color:#7c3aed;font-weight:600">Abrir el portal →</a></p>`
           : ""
       }
-      <p style="margin-top:32px;font-size:12px;color:#9ca3af">Si no esperabas este correo, ignóralo. — TeacherFlow</p>
+      <p style="margin-top:32px;font-size:12px;color:#9ca3af">Si no esperabas este correo, ignóralo. — English Odyssey</p>
     </div>
   `;
 

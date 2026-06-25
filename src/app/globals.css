@@ -4,29 +4,30 @@
 
 @layer base {
   :root {
-    --background: 32 42% 98%;
-    --foreground: 250 24% 17%;
-    --card: 0 0% 100%;
-    --card-foreground: 250 24% 17%;
-    --primary: 255 78% 62%;
+    /* English Odyssey — crimson + cream + navy, vintage travel theme */
+    --background: 38 40% 96%;
+    --foreground: 222 28% 18%;
+    --card: 40 40% 99%;
+    --card-foreground: 222 28% 18%;
+    --primary: 351 78% 46%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 30 34% 95%;
-    --secondary-foreground: 250 24% 22%;
-    --muted: 30 28% 95%;
-    --muted-foreground: 250 8% 47%;
-    --accent: 190 90% 42%;
+    --secondary: 36 36% 93%;
+    --secondary-foreground: 222 28% 22%;
+    --muted: 36 30% 93%;
+    --muted-foreground: 222 12% 44%;
+    --accent: 222 47% 24%;
     --accent-foreground: 0 0% 100%;
-    --success: 158 64% 42%;
+    --success: 152 56% 40%;
     --success-foreground: 0 0% 100%;
-    --warning: 35 92% 56%;
-    --warning-foreground: 0 0% 100%;
-    --destructive: 0 72% 51%;
+    --warning: 38 92% 52%;
+    --warning-foreground: 24 60% 18%;
+    --destructive: 351 78% 46%;
     --destructive-foreground: 0 0% 100%;
-    --meet: 142 71% 45%;
+    --meet: 142 64% 42%;
     --meet-foreground: 0 0% 100%;
-    --border: 268 26% 92%;
-    --input: 268 24% 90%;
-    --ring: 255 78% 62%;
+    --border: 34 26% 88%;
+    --input: 34 24% 86%;
+    --ring: 351 78% 46%;
     --radius: 1rem;
   }
 
@@ -36,11 +37,9 @@
 
   body {
     background:
-      radial-gradient(ellipse 70% 50% at 12% -10%, hsl(258 90% 92% / 0.75) 0%, transparent 55%),
-      radial-gradient(ellipse 58% 45% at 100% 0%, hsl(188 85% 88% / 0.6) 0%, transparent 52%),
-      radial-gradient(ellipse 72% 55% at 92% 108%, hsl(22 90% 90% / 0.5) 0%, transparent 55%),
+      radial-gradient(ellipse 90% 60% at 50% -25%, hsl(351 65% 90% / 0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 50% at 100% 105%, hsl(222 50% 86% / 0.3) 0%, transparent 55%),
       hsl(var(--background));
-    background-attachment: fixed;
     color: hsl(var(--foreground));
     font-feature-settings: "cv02", "cv03", "cv04", "ss01", "calt" 1;
   }
