@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
+import { GraduationCap } from "lucide-react";
 import { audit } from "@/server/audit/log";
 
 async function loginAction(formData: FormData) {
@@ -57,14 +58,24 @@ export default async function LoginPage({
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-indigo-50 p-4">
-      <div className="w-full max-w-sm space-y-4">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 50% at 18% 0%, hsl(258 90% 90% / 0.8) 0%, transparent 55%), radial-gradient(ellipse 55% 45% at 100% 10%, hsl(188 85% 86% / 0.7) 0%, transparent 52%), radial-gradient(ellipse 70% 55% at 85% 100%, hsl(22 90% 88% / 0.6) 0%, transparent 55%)",
+        }}
+      />
+      <div className="w-full max-w-sm space-y-5 animate-fade-in-up">
         <div className="flex justify-end">
           <LocaleSwitcher />
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>TeacherFlow</CardTitle>
+        <Card className="shadow-elevated">
+          <CardHeader className="items-center text-center">
+            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent text-white shadow-lg shadow-primary/30">
+              <GraduationCap className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-xl">TeacherFlow</CardTitle>
             <CardDescription>{t("welcomeBack")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

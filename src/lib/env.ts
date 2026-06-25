@@ -21,6 +21,13 @@ const envSchema = z.object({
   SMTP_FROM: z.string().optional(),
   APP_URL: z.string().url().optional(),
   CRON_SECRET: z.string().optional(),
+  // WhatsApp (Meta Cloud API) — recordatorios por WhatsApp.
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  WHATSAPP_API_VERSION: z.string().default("v21.0"),
+  WHATSAPP_REMINDER_TEMPLATE: z.string().default("class_reminder"),
+  WHATSAPP_TEMPLATE_LANG: z.string().default("en"),
+  WHATSAPP_DEFAULT_COUNTRY_CODE: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

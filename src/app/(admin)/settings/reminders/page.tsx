@@ -1,10 +1,11 @@
 import { addDays } from "date-fns";
 import { getTranslations } from "next-intl/server";
-import { Mail, MailX, Send } from "lucide-react";
+import { Mail, MailX, Send, MessageSquare } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/server/auth/session";
 import { Role } from "@/lib/enums";
 import { isEmailConfigured } from "@/lib/email";
+import { isWhatsAppConfigured } from "@/lib/whatsapp";
 import { madridDayBounds } from "@/lib/timezone";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +21,8 @@ export default async function RemindersPage() {
   const tCommon = await getTranslations("common");
 
   const configured = isEmailConfigured();
+  const whatsappConfigured = isWhatsAppConfigured();
+  const anyConfigured = configured || whatsappConfigured;
   const tomorrow = addDays(new Date(), 1);
   const { start, end } = madridDayBounds(tomorrow);
   const [tomorrowCount, sentToday] = await Promise.all([
@@ -53,6 +56,24 @@ export default async function RemindersPage() {
             </div>
           </div>
 
+          <div className="flex items-start gap-3">
+            <MessageSquare
+              className={`mt-0.5 h-5 w-5 ${whatsappConfigured ? "text-emerald-600" : "text-amber-600"}`}
+            />
+            <div>
+              <div className="text-sm font-medium">
+                {whatsappConfigured
+                  ? t("whatsappConfigured")
+                  : t("whatsappMissing")}
+              </div>
+              {!whatsappConfigured && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {t("whatsappHelp")}
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3 pt-2">
             <div className="rounded-lg border p-3">
               <div className="text-xs text-muted-foreground">
@@ -72,7 +93,7 @@ export default async function RemindersPage() {
               await triggerClassReminders();
             }}
           >
-            <Button type="submit" disabled={!configured}>
+            <Button type="submit" disabled={!anyConfigured}>
               <Send className="h-4 w-4" /> {t("sendNow")}
             </Button>
           </form>

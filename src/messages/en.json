@@ -110,6 +110,10 @@
     "group": "Group",
     "notes": "Internal notes",
     "isMinor": "Is a minor",
+    "notifications": "Notifications",
+    "notifyHint": "Choose how this student gets class reminders. WhatsApp requires a phone number in international format.",
+    "notifyEmail": "By email",
+    "notifyWhatsapp": "By WhatsApp",
     "guardians": "Legal guardians",
     "personalData": "Personal data",
     "academic": "Academic",
@@ -371,15 +375,18 @@
       "saved": "Saved"
     },
     "reminders": {
-      "title": "Email reminders",
-      "intro": "Students get a daily email about classes happening the next day.",
+      "title": "Class reminders",
+      "intro": "Students get a reminder before their class, by email and/or WhatsApp depending on each student's preference.",
       "smtpConfigured": "SMTP configured.",
       "smtpMissing": "SMTP not configured.",
       "smtpHelp": "Set SMTP_HOST, SMTP_USER and SMTP_PASS in .env (cheapest: Gmail App Password).",
+      "whatsappConfigured": "WhatsApp configured.",
+      "whatsappMissing": "WhatsApp not configured.",
+      "whatsappHelp": "Set WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN in .env (Meta WhatsApp Cloud API).",
       "classesTomorrow": "Classes tomorrow",
-      "sentToday": "Emails sent today",
+      "sentToday": "Reminders sent today",
       "sendNow": "Send now",
-      "autoNote": "The daily cron sends reminders automatically."
+      "autoNote": "The cron sends reminders automatically."
     }
   },
   "speaking": {

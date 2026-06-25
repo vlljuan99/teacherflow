@@ -58,14 +58,14 @@ export function Sidebar({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
   const t = useTranslations("nav");
   return (
-    <aside className="hidden w-60 shrink-0 border-r bg-card/70 backdrop-blur md:flex md:flex-col">
-      <div className="flex items-center gap-2 border-b px-5 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent text-white shadow-sm">
-          <GraduationCap className="h-4 w-4" />
+    <aside className="hidden w-60 shrink-0 border-r bg-card/60 backdrop-blur-xl md:flex md:flex-col">
+      <div className="flex items-center gap-2.5 border-b px-5 py-4">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-white shadow-md shadow-primary/30">
+          <GraduationCap className="h-[18px] w-[18px]" />
         </div>
-        <span className="text-base font-semibold tracking-tight">TeacherFlow</span>
+        <span className="text-base font-bold tracking-tight">TeacherFlow</span>
       </div>
-      <nav className="flex-1 space-y-0.5 p-3">
+      <nav className="flex-1 space-y-1 p-3">
         {items.map((item) => {
           const active =
             pathname === item.href ||
@@ -78,8 +78,9 @@ export function Sidebar({ items }: { items: NavItem[] }) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground/70 transition hover:bg-accent/10 hover:text-foreground",
-                active && "bg-gradient-to-r from-primary/15 to-accent/10 text-primary shadow-sm",
+                "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-foreground/70 transition-all hover:bg-secondary hover:text-foreground",
+                active &&
+                  "bg-gradient-to-r from-primary/15 to-accent/10 font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/10 hover:from-primary/15 hover:to-accent/10 hover:text-primary",
               )}
             >
               <Icon className={cn("h-4 w-4", active && "text-primary")} />

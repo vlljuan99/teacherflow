@@ -28,6 +28,14 @@ const StudentSchema = z.object({
     .union([z.literal("on"), z.literal("true"), z.literal("false"), z.literal("")])
     .optional()
     .transform((v) => v === "on" || v === "true"),
+  notifyEmail: z
+    .union([z.literal("on"), z.literal("true"), z.literal("false"), z.literal("")])
+    .optional()
+    .transform((v) => v === "on" || v === "true"),
+  notifyWhatsapp: z
+    .union([z.literal("on"), z.literal("true"), z.literal("false"), z.literal("")])
+    .optional()
+    .transform((v) => v === "on" || v === "true"),
   notes: z.string().max(2000).optional().transform((v) => (v ? v : null)),
 });
 

@@ -110,6 +110,10 @@
     "group": "Grupo",
     "notes": "Observaciones internas",
     "isMinor": "Es menor de edad",
+    "notifications": "Notificaciones",
+    "notifyHint": "Elige cómo recibe este alumno los recordatorios de clase. WhatsApp requiere un teléfono en formato internacional.",
+    "notifyEmail": "Por email",
+    "notifyWhatsapp": "Por WhatsApp",
     "guardians": "Tutores legales",
     "personalData": "Datos personales",
     "academic": "Académico",
@@ -371,15 +375,18 @@
       "saved": "Guardada"
     },
     "reminders": {
-      "title": "Recordatorios por email",
-      "intro": "Cada día se envía a tus alumnos un email con las clases que tienen al día siguiente.",
+      "title": "Recordatorios de clase",
+      "intro": "Tus alumnos reciben un recordatorio antes de su clase, por email y/o WhatsApp según la preferencia de cada alumno.",
       "smtpConfigured": "SMTP configurado correctamente.",
       "smtpMissing": "SMTP no configurado.",
       "smtpHelp": "Rellena SMTP_HOST, SMTP_USER y SMTP_PASS en .env (lo más barato: Gmail App Password).",
+      "whatsappConfigured": "WhatsApp configurado correctamente.",
+      "whatsappMissing": "WhatsApp no configurado.",
+      "whatsappHelp": "Rellena WHATSAPP_PHONE_NUMBER_ID y WHATSAPP_ACCESS_TOKEN en .env (Meta WhatsApp Cloud API).",
       "classesTomorrow": "Clases mañana",
-      "sentToday": "Emails enviados hoy",
+      "sentToday": "Recordatorios enviados hoy",
       "sendNow": "Enviar ahora",
-      "autoNote": "El cron diario envía los recordatorios automáticamente."
+      "autoNote": "El cron envía los recordatorios automáticamente."
     }
   },
   "speaking": {

@@ -31,12 +31,14 @@ export function MobileNav({ items }: { items: NavItem[] }) {
                   active ? "text-primary" : "text-muted-foreground",
                 )}
               >
-                <Icon
+                <span
                   className={cn(
-                    "h-5 w-5",
-                    active ? "text-primary" : "text-muted-foreground",
+                    "flex h-7 w-12 items-center justify-center rounded-full transition-colors",
+                    active && "bg-primary/10",
                   )}
-                />
+                >
+                  <Icon className="h-5 w-5" />
+                </span>
                 <span className="truncate">{t(item.labelKey)}</span>
               </Link>
             </li>
