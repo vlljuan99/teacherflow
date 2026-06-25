@@ -55,6 +55,7 @@ model Student {
   notifyWhatsapp Boolean @default(false)
   birthDate DateTime?
   level     String    @default("A1")
+  allowedTracks String? // CSV de MaterialTrack visibles para el alumno; null/"" = ve todas
   status    String    @default("ACTIVE")
   isMinor   Boolean   @default(false)
   notes         String?
@@ -83,6 +84,8 @@ model Student {
   materialLinks  MaterialLink[]
   sessionLogs    SessionLog[]
   placementTest  PlacementTest?
+  attendance       Attendance[]
+  skillSubmissions SkillSubmission[]
 }
 
 model Guardian {
@@ -149,6 +152,7 @@ model Class {
   updatedAt     DateTime @updatedAt
 
   attachments ClassAttachment[]
+  attendance  Attendance[]
 
   @@index([startAt])
   @@index([seriesId])
@@ -220,6 +224,7 @@ model Assignment {
   group       Group?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
   dueAt       DateTime?
   status      String    @default("PENDING")
+  summer      Boolean   @default(false) // deberes de verano (se agrupan aparte en el portal)
   createdById String
   createdBy   User      @relation("AssignmentCreator", fields: [createdById], references: [id])
   createdAt   DateTime  @default(now())
@@ -526,6 +531,53 @@ model PlacementTest {
   completedAt       DateTime?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+// ---------------- Attendance ----------------
+
+model Attendance {
+  id        String   @id @default(cuid())
+  classId   String
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  status    String   @default("PRESENT") // PRESENT | ABSENT | LATE | EXCUSED
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([classId, studentId])
+  @@index([studentId])
+  @@index([classId])
+}
+
+// ---------------- Skill submissions (Speaking audio / Writing files) ----------------
+
+model SkillSubmission {
+  id             String   @id @default(cuid())
+  skill          String   // SPEAKING | WRITING
+  studentId      String
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  title          String
+  prompt         String?  // contexto / consigna opcional
+  text           String?  // texto escrito (writing) opcional
+  filePath       String?  // archivo subido (audio para speaking, doc/imagen para writing)
+  storage        String?  // local | azure
+  blobName       String?
+  mime           String?
+  size           Int?
+  originalName   String?
+  status         String   @default("SUBMITTED") // SUBMITTED | REVIEWED
+  score          Float?
+  maxScore       Float?
+  teacherComment String?
+  submittedAt    DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([skill])
+  @@index([status])
 }
 
 // ---------------- Audit ----------------

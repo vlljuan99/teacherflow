@@ -11,9 +11,11 @@ import Link from "next/link";
 import { MeetButton } from "@/components/ui/meet-button";
 import { DeleteClassButton } from "@/components/classes/delete-class-button";
 import { ClassHomeworkSection } from "@/components/homework/class-homework-section";
+import { AttendanceSection } from "@/components/classes/attendance-section";
 import { SeriesBanner } from "@/components/classes/series-banner";
 import { ClassForm } from "../_form";
 import { updateClass } from "@/server/actions/classes";
+import { saveClassAttendance } from "@/server/actions/attendance";
 import { generateMeetForClass, removeMeetForClass } from "@/server/actions/google";
 import { getTranslations } from "next-intl/server";
 
@@ -48,6 +50,31 @@ export default async function ClassDetailPage({
     prisma.googleAccount.findUnique({ where: { userId: session.user.id } }),
   ]);
   if (!klass) notFound();
+
+  // Attendance roster: the single student, or the group's students.
+  const roster = klass.studentId
+    ? students
+        .filter((s) => s.id === klass.studentId)
+        .map((s) => ({ id: s.id, firstName: s.firstName, lastName: s.lastName }))
+    : klass.groupId
+      ? await prisma.student.findMany({
+          where: { groupId: klass.groupId },
+          orderBy: { lastName: "asc" },
+          select: { id: true, firstName: true, lastName: true },
+        })
+      : [];
+  const attendanceRows = await prisma.attendance.findMany({
+    where: { classId: klass.id },
+    select: { studentId: true, status: true, note: true },
+  });
+  const existingAttendance = Object.fromEntries(
+    attendanceRows.map((a) => [a.studentId, { status: a.status, note: a.note }]),
+  );
+  const saveAttendanceAction = async (formData: FormData) => {
+    "use server";
+    await saveClassAttendance(klass.id, formData);
+  };
+
   const action = async (formData: FormData) => {
     "use server";
     await updateClass(klass.id, formData);
@@ -137,6 +164,12 @@ export default async function ClassDetailPage({
       )}
 
       <ClassHomeworkSection studentId={klass.studentId} groupId={klass.groupId} />
+
+      <AttendanceSection
+        roster={roster}
+        existing={existingAttendance}
+        action={saveAttendanceAction}
+      />
 
       <Card>
         <CardHeader>

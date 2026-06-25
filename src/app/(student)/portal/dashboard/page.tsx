@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Calendar,
   ClipboardList,
+  BellRing,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { prisma } from "@/lib/db";
@@ -72,44 +73,59 @@ export default async function StudentDashboardPage() {
 
   const student = await prisma.student.findUnique({
     where: { id: studentId },
-    select: { groupId: true, firstName: true },
+    select: { groupId: true, firstName: true, allowedTracks: true },
   });
   const groupId = student?.groupId ?? null;
+  const allowed = (student?.allowedTracks ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s): s is MaterialTrack => (TRACK_ORDER as string[]).includes(s));
+  const visibleTracks: MaterialTrack[] =
+    allowed.length > 0 ? TRACK_ORDER.filter((tr) => allowed.includes(tr)) : [...TRACK_ORDER];
 
-  const [upcoming, pending, trackCounts, expressionSetting, meaningSetting] =
-    await Promise.all([
-      prisma.class.findMany({
-        where: {
-          OR: [{ studentId }, ...(groupId ? [{ groupId }] : [])],
-          startAt: { gte: today },
-        },
-        orderBy: { startAt: "asc" },
-        take: 3,
-      }),
-      prisma.assignment.findMany({
-        where: {
-          OR: [{ studentId }, ...(groupId ? [{ groupId }] : [])],
-          submissions: {
-            none: {
-              studentId,
-              correctionStatus: { in: ["SUBMITTED", "CORRECTED"] },
-            },
-          },
-        },
-        include: { worksheet: true },
-        orderBy: { createdAt: "desc" },
-        take: 3,
-      }),
-      prisma.material.groupBy({
-        by: ["track"],
-        _count: { _all: true },
-        where: { track: { not: null } },
-      }),
-      prisma.siteSetting.findUnique({ where: { key: "expressionOfWeek" } }),
-      prisma.siteSetting.findUnique({
-        where: { key: "expressionOfWeekMeaning" },
-      }),
-    ]);
+  const pendingWhere = {
+    OR: [{ studentId }, ...(groupId ? [{ groupId }] : [])],
+    submissions: {
+      none: {
+        studentId,
+        correctionStatus: { in: ["SUBMITTED", "CORRECTED"] },
+      },
+    },
+  };
+
+  const [
+    upcoming,
+    pending,
+    pendingCount,
+    trackCounts,
+    expressionSetting,
+    meaningSetting,
+  ] = await Promise.all([
+    prisma.class.findMany({
+      where: {
+        OR: [{ studentId }, ...(groupId ? [{ groupId }] : [])],
+        startAt: { gte: today },
+      },
+      orderBy: { startAt: "asc" },
+      take: 3,
+    }),
+    prisma.assignment.findMany({
+      where: pendingWhere,
+      include: { worksheet: true },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    }),
+    prisma.assignment.count({ where: pendingWhere }),
+    prisma.material.groupBy({
+      by: ["track"],
+      _count: { _all: true },
+      where: { track: { not: null } },
+    }),
+    prisma.siteSetting.findUnique({ where: { key: "expressionOfWeek" } }),
+    prisma.siteSetting.findUnique({
+      where: { key: "expressionOfWeekMeaning" },
+    }),
+  ]);
 
   const countByTrack = new Map<string, number>();
   for (const row of trackCounts) {
@@ -130,6 +146,26 @@ export default async function StudentDashboardPage() {
           {t("welcomeNote")}
         </p>
       </section>
+
+      {pendingCount > 0 && (
+        <Link
+          href="/portal/worksheets"
+          className="flex items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-900 shadow-sm transition active:scale-[0.99] sm:hover:-translate-y-0.5 sm:hover:shadow-md"
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-400/20">
+            <BellRing className="h-5 w-5 text-amber-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold sm:text-base">
+              {t("pendingHomeworkTitle", { count: pendingCount })}
+            </div>
+            <div className="text-xs text-amber-800/80">
+              {t("pendingHomeworkSubtitle")}
+            </div>
+          </div>
+          <ChevronRight className="h-5 w-5 shrink-0 text-amber-600" />
+        </Link>
+      )}
 
       <Card className="overflow-hidden border-0 bg-gradient-to-br from-primary to-accent text-white shadow-lg">
         <CardContent className="p-5 sm:p-6">
@@ -167,7 +203,7 @@ export default async function StudentDashboardPage() {
           {t("yourFolders")}
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-          {TRACK_ORDER.map((track) => {
+          {visibleTracks.map((track) => {
             const visual = TRACK_VISUAL[track];
             const Icon = visual.icon;
             const count = countByTrack.get(track) ?? 0;

@@ -65,7 +65,10 @@
     "settings": "Ajustes",
     "expression": "Expresión semanal",
     "reminders": "Recordatorios",
-    "speaking": "Speaking Corner"
+    "speaking": "Speaking Corner",
+    "attendance": "Asistencia",
+    "submissions": "Speaking & Writing",
+    "myWriting": "Writing"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -95,7 +98,9 @@
     "expressionOfWeekEmpty": "Tu profesora aún no ha publicado la expresión de esta semana.",
     "yourFolders": "Tus carpetas",
     "openFolder": "Abrir carpeta",
-    "materialsCount": "{count, plural, =0 {Sin materiales} =1 {1 material} other {# materiales}}"
+    "materialsCount": "{count, plural, =0 {Sin materiales} =1 {1 material} other {# materiales}}",
+    "pendingHomeworkTitle": "Tienes {count, plural, one {# deber pendiente} other {# deberes pendientes}}",
+    "pendingHomeworkSubtitle": "Toca para verlos y entregarlos"
   },
   "students": {
     "title": "Alumnos",
@@ -137,7 +142,9 @@
       "ACTIVE": "Activo",
       "INACTIVE": "Inactivo",
       "PENDING": "Pendiente"
-    }
+    },
+    "allowedTracks": "Carpetas visibles",
+    "allowedTracksHint": "Marca las vías que este alumno verá en Materiales. Si no marcas ninguna, verá todas."
   },
   "guardians": {
     "title": "Tutores legales",
@@ -229,7 +236,9 @@
       "SUBMITTED": "Entregada",
       "CORRECTED": "Corregida"
     },
-    "submissions": "Entregas"
+    "submissions": "Entregas",
+    "summer": "Deberes de verano",
+    "summerSection": "Deberes de verano"
   },
   "solver": {
     "saveProgress": "Guardar progreso",
@@ -433,5 +442,56 @@
     "B2": "B2",
     "C1": "C1",
     "C2": "C2"
+  },
+  "attendance": {
+    "title": "Asistencia",
+    "noRoster": "Esta clase no tiene alumnos asignados.",
+    "statusOptions": {
+      "PRESENT": "Presente",
+      "LATE": "Tarde",
+      "ABSENT": "Ausente",
+      "EXCUSED": "Justificado"
+    },
+    "notePlaceholder": "Nota (opcional)",
+    "reportTitle": "Informe de asistencia",
+    "reportIntro": "Resumen semanal de asistencia de todos los alumnos.",
+    "prevWeek": "Anterior",
+    "nextWeek": "Siguiente",
+    "thisWeek": "Esta semana",
+    "noRecords": "Sin registros esta semana",
+    "noRecordsHint": "Registra la asistencia desde la ficha de cada clase.",
+    "student": "Alumno",
+    "rate": "% asist."
+  },
+  "skills": {
+    "uploadAudioTitle": "Subir audio",
+    "uploadFileTitle": "Subir archivo",
+    "titleField": "Título",
+    "titlePlaceholder": "Ej.: Describe tu rutina diaria",
+    "textField": "Texto (opcional)",
+    "textPlaceholder": "Escribe aquí tu respuesta…",
+    "audioFile": "Archivo de audio",
+    "attachFile": "Archivo",
+    "audioHint": "Sube una grabación de audio (mp3, m4a, ogg…).",
+    "fileHint": "Sube un PDF, imagen o documento.",
+    "submitBtn": "Enviar",
+    "yourSubmissions": "Tus envíos",
+    "noSubmissions": "Aún no has enviado nada",
+    "noSubmissionsHint": "Sube tu primer trabajo arriba.",
+    "statusReviewed": "Revisado",
+    "statusSubmitted": "Enviado",
+    "teacherFeedback": "Comentario de la profesora",
+    "writingTitle": "Writing",
+    "writingIntro": "Sube tus redacciones y la profesora te las corrige.",
+    "speakingGameSection": "Juego de speaking",
+    "reviewTitle": "Speaking & Writing",
+    "reviewIntro": "Revisa y califica los envíos de los alumnos.",
+    "speaking": "Speaking",
+    "writing": "Writing",
+    "noSubmissionsTeacher": "No hay envíos todavía.",
+    "score": "Nota",
+    "maxScore": "Sobre",
+    "comment": "Comentario",
+    "saveReview": "Guardar"
   }
 }

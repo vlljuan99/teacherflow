@@ -189,6 +189,34 @@ export const TRACK_ORDER: MaterialTrack[] = [
   MaterialTrack.ADULTS,
 ];
 
+export const AttendanceStatus = {
+  PRESENT: "PRESENT",
+  ABSENT: "ABSENT",
+  LATE: "LATE",
+  EXCUSED: "EXCUSED",
+} as const;
+export type AttendanceStatus = (typeof AttendanceStatus)[keyof typeof AttendanceStatus];
+
+export const ATTENDANCE_ORDER: AttendanceStatus[] = [
+  AttendanceStatus.PRESENT,
+  AttendanceStatus.LATE,
+  AttendanceStatus.ABSENT,
+  AttendanceStatus.EXCUSED,
+];
+
+export const Skill = {
+  SPEAKING: "SPEAKING",
+  WRITING: "WRITING",
+} as const;
+export type Skill = (typeof Skill)[keyof typeof Skill];
+
+export const SkillSubmissionStatus = {
+  SUBMITTED: "SUBMITTED",
+  REVIEWED: "REVIEWED",
+} as const;
+export type SkillSubmissionStatus =
+  (typeof SkillSubmissionStatus)[keyof typeof SkillSubmissionStatus];
+
 export const SpeakingTwist = {
   DOUBLE: "DOUBLE",
   STEAL: "STEAL",

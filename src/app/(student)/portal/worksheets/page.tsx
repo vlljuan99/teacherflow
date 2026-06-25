@@ -33,69 +33,86 @@ export default async function StudentWorksheetsPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const summer = assignments.filter((a) => a.summer);
+  const regular = assignments.filter((a) => !a.summer);
+
+  const renderTable = (list: typeof assignments) => (
+    <Card>
+      <Table>
+        <THead>
+          <TR>
+            <TH>{t("worksheet")}</TH>
+            <TH>{t("dueAt")}</TH>
+            <TH>{t("status")}</TH>
+            <TH></TH>
+          </TR>
+        </THead>
+        <TBody>
+          {list.map((a) => {
+            const sub = a.submissions[0];
+            const status = sub?.correctionStatus ?? "PENDING";
+            return (
+              <TR key={a.id}>
+                <TD>
+                  <span className="font-medium">{a.worksheet.title}</span>{" "}
+                  <span className="text-xs text-muted-foreground">
+                    {a.worksheet.level}
+                  </span>
+                </TD>
+                <TD>{formatDate(a.dueAt)}</TD>
+                <TD>
+                  <Badge
+                    tone={
+                      status === "CORRECTED"
+                        ? "success"
+                        : status === "SUBMITTED"
+                          ? "info"
+                          : status === "IN_PROGRESS"
+                            ? "warning"
+                            : "muted"
+                    }
+                  >
+                    {status}
+                  </Badge>
+                  {sub?.finalScore != null && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      {sub.finalScore}/{sub.maxScore}
+                    </span>
+                  )}
+                </TD>
+                <TD>
+                  <Link
+                    className="text-sm text-primary hover:underline"
+                    href={`/portal/worksheets/${a.id}/solve`}
+                  >
+                    {status === "CORRECTED" ? tCommon("open") : "Abrir"}
+                  </Link>
+                </TD>
+              </TR>
+            );
+          })}
+        </TBody>
+      </Table>
+    </Card>
+  );
+
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader title={t("title")} />
       {assignments.length === 0 ? (
         <EmptyState title={tCommon("noResults")} />
       ) : (
-        <Card>
-          <Table>
-            <THead>
-              <TR>
-                <TH>{t("worksheet")}</TH>
-                <TH>{t("dueAt")}</TH>
-                <TH>{t("status")}</TH>
-                <TH></TH>
-              </TR>
-            </THead>
-            <TBody>
-              {assignments.map((a) => {
-                const sub = a.submissions[0];
-                const status = sub?.correctionStatus ?? "PENDING";
-                return (
-                  <TR key={a.id}>
-                    <TD>
-                      <span className="font-medium">{a.worksheet.title}</span>{" "}
-                      <span className="text-xs text-muted-foreground">
-                        {a.worksheet.level}
-                      </span>
-                    </TD>
-                    <TD>{formatDate(a.dueAt)}</TD>
-                    <TD>
-                      <Badge
-                        tone={
-                          status === "CORRECTED"
-                            ? "success"
-                            : status === "SUBMITTED"
-                              ? "info"
-                              : status === "IN_PROGRESS"
-                                ? "warning"
-                                : "muted"
-                        }
-                      >
-                        {status}
-                      </Badge>
-                      {sub?.finalScore != null && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          {sub.finalScore}/{sub.maxScore}
-                        </span>
-                      )}
-                    </TD>
-                    <TD>
-                      <Link
-                        className="text-sm text-primary hover:underline"
-                        href={`/portal/worksheets/${a.id}/solve`}
-                      >
-                        {status === "CORRECTED" ? tCommon("open") : "Abrir"}
-                      </Link>
-                    </TD>
-                  </TR>
-                );
-              })}
-            </TBody>
-          </Table>
-        </Card>
+        <>
+          {regular.length > 0 && renderTable(regular)}
+          {summer.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="flex items-center gap-2 px-1 text-sm font-semibold uppercase tracking-wide text-amber-700">
+                ☀️ {t("summerSection")}
+              </h2>
+              {renderTable(summer)}
+            </section>
+          )}
+        </>
       )}
     </div>
   );

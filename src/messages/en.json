@@ -65,7 +65,10 @@
     "settings": "Settings",
     "expression": "Weekly expression",
     "reminders": "Reminders",
-    "speaking": "Speaking Corner"
+    "speaking": "Speaking Corner",
+    "attendance": "Attendance",
+    "submissions": "Speaking & Writing",
+    "myWriting": "Writing"
   },
   "auth": {
     "login": "Sign in",
@@ -95,7 +98,9 @@
     "expressionOfWeekEmpty": "Your teacher hasn't posted this week's expression yet.",
     "yourFolders": "Your folders",
     "openFolder": "Open folder",
-    "materialsCount": "{count, plural, =0 {No materials} =1 {1 material} other {# materials}}"
+    "materialsCount": "{count, plural, =0 {No materials} =1 {1 material} other {# materials}}",
+    "pendingHomeworkTitle": "You have {count, plural, one {# pending homework} other {# pending homeworks}}",
+    "pendingHomeworkSubtitle": "Tap to view and submit"
   },
   "students": {
     "title": "Students",
@@ -137,7 +142,9 @@
       "ACTIVE": "Active",
       "INACTIVE": "Inactive",
       "PENDING": "Pending"
-    }
+    },
+    "allowedTracks": "Visible folders",
+    "allowedTracksHint": "Tick the tracks this student can see in Materials. If none are ticked, they see all."
   },
   "guardians": {
     "title": "Legal guardians",
@@ -229,7 +236,9 @@
       "SUBMITTED": "Submitted",
       "CORRECTED": "Corrected"
     },
-    "submissions": "Submissions"
+    "submissions": "Submissions",
+    "summer": "Summer homework",
+    "summerSection": "Summer homework"
   },
   "solver": {
     "saveProgress": "Save progress",
@@ -433,5 +442,56 @@
     "B2": "B2",
     "C1": "C1",
     "C2": "C2"
+  },
+  "attendance": {
+    "title": "Attendance",
+    "noRoster": "This class has no students assigned.",
+    "statusOptions": {
+      "PRESENT": "Present",
+      "LATE": "Late",
+      "ABSENT": "Absent",
+      "EXCUSED": "Excused"
+    },
+    "notePlaceholder": "Note (optional)",
+    "reportTitle": "Attendance report",
+    "reportIntro": "Weekly attendance summary for all students.",
+    "prevWeek": "Previous",
+    "nextWeek": "Next",
+    "thisWeek": "This week",
+    "noRecords": "No records this week",
+    "noRecordsHint": "Record attendance from each class page.",
+    "student": "Student",
+    "rate": "Att. %"
+  },
+  "skills": {
+    "uploadAudioTitle": "Upload audio",
+    "uploadFileTitle": "Upload file",
+    "titleField": "Title",
+    "titlePlaceholder": "E.g.: Describe your daily routine",
+    "textField": "Text (optional)",
+    "textPlaceholder": "Write your answer here…",
+    "audioFile": "Audio file",
+    "attachFile": "File",
+    "audioHint": "Upload an audio recording (mp3, m4a, ogg…).",
+    "fileHint": "Upload a PDF, image or document.",
+    "submitBtn": "Submit",
+    "yourSubmissions": "Your submissions",
+    "noSubmissions": "You haven't submitted anything yet",
+    "noSubmissionsHint": "Upload your first piece above.",
+    "statusReviewed": "Reviewed",
+    "statusSubmitted": "Submitted",
+    "teacherFeedback": "Teacher feedback",
+    "writingTitle": "Writing",
+    "writingIntro": "Upload your writing and the teacher will correct it.",
+    "speakingGameSection": "Speaking game",
+    "reviewTitle": "Speaking & Writing",
+    "reviewIntro": "Review and grade student submissions.",
+    "speaking": "Speaking",
+    "writing": "Writing",
+    "noSubmissionsTeacher": "No submissions yet.",
+    "score": "Score",
+    "maxScore": "Out of",
+    "comment": "Comment",
+    "saveReview": "Save"
   }
 }
