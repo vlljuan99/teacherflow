@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { Role, EnglishLevel, StudentStatus } from "@/lib/enums";
+import { Role, EnglishLevel, StudentStatus, TRACK_ORDER } from "@/lib/enums";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/server/auth/session";
 import { audit } from "@/server/audit/log";
@@ -46,6 +46,15 @@ function fd(formData: FormData) {
   return entries;
 }
 
+// Multi-value field: CSV of valid MaterialTrack keys, or null when none selected.
+function parseAllowedTracks(formData: FormData): string | null {
+  const valid = new Set<string>(TRACK_ORDER);
+  const picked = formData
+    .getAll("allowedTracks")
+    .filter((v): v is string => typeof v === "string" && valid.has(v));
+  return picked.length > 0 ? Array.from(new Set(picked)).join(",") : null;
+}
+
 async function extractPhotoUrl(formData: FormData): Promise<string | undefined> {
   const file = formData.get("photo");
   if (!(file instanceof File) || file.size === 0) return undefined;
@@ -56,9 +65,10 @@ async function extractPhotoUrl(formData: FormData): Promise<string | undefined> 
 export async function createStudent(formData: FormData) {
   const session = await requireRole(Role.TEACHER);
   const data = StudentSchema.parse(fd(formData));
+  const allowedTracks = parseAllowedTracks(formData);
   const photoUrl = await extractPhotoUrl(formData);
   const student = await prisma.student.create({
-    data: { ...data, ...(photoUrl ? { photoUrl } : {}) },
+    data: { ...data, allowedTracks, ...(photoUrl ? { photoUrl } : {}) },
   });
 
   try {
@@ -94,10 +104,11 @@ export async function createStudent(formData: FormData) {
 export async function updateStudent(id: string, formData: FormData) {
   const session = await requireRole(Role.TEACHER);
   const data = StudentSchema.parse(fd(formData));
+  const allowedTracks = parseAllowedTracks(formData);
   const photoUrl = await extractPhotoUrl(formData);
   await prisma.student.update({
     where: { id },
-    data: { ...data, ...(photoUrl ? { photoUrl } : {}) },
+    data: { ...data, allowedTracks, ...(photoUrl ? { photoUrl } : {}) },
   });
   await audit({
     actorUserId: session.user.id,

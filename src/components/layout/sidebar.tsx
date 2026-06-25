@@ -13,6 +13,7 @@ import {
   CalendarDays,
   FileText,
   ClipboardList,
+  ClipboardCheck,
   CreditCard,
   ShieldCheck,
   FolderOpen,
@@ -22,6 +23,8 @@ import {
   Settings,
   Mail,
   MessageSquare,
+  Mic,
+  PenLine,
 } from "lucide-react";
 
 export interface NavItem {
@@ -35,9 +38,11 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/students", labelKey: "students", icon: Users },
   { href: "/groups", labelKey: "groups", icon: Boxes },
   { href: "/classes", labelKey: "classes", icon: CalendarDays },
+  { href: "/attendance", labelKey: "attendance", icon: ClipboardCheck },
   { href: "/search", labelKey: "search", icon: Sparkles },
   { href: "/worksheets", labelKey: "worksheets", icon: FileText },
   { href: "/assignments", labelKey: "assignments", icon: ClipboardList },
+  { href: "/submissions", labelKey: "submissions", icon: Mic },
   { href: "/payments", labelKey: "payments", icon: CreditCard },
   { href: "/materials", labelKey: "materials", icon: FolderOpen },
   { href: "/settings/expression", labelKey: "expression", icon: Sparkles },
@@ -51,10 +56,17 @@ export const STUDENT_NAV: NavItem[] = [
   { href: "/portal/worksheets", labelKey: "myWorksheets", icon: FileText },
   { href: "/portal/materials", labelKey: "myMaterials", icon: FolderOpen },
   { href: "/portal/speaking", labelKey: "speaking", icon: MessageSquare },
+  { href: "/portal/writing", labelKey: "myWriting", icon: PenLine },
   { href: "/portal/progress", labelKey: "myProgress", icon: TrendingUp },
 ];
 
-export function Sidebar({ items }: { items: NavItem[] }) {
+export function Sidebar({
+  items,
+  badges,
+}: {
+  items: NavItem[];
+  badges?: Record<string, number>;
+}) {
   const pathname = usePathname();
   const t = useTranslations("nav");
   return (
@@ -73,6 +85,7 @@ export function Sidebar({ items }: { items: NavItem[] }) {
               item.href !== "/portal/dashboard" &&
               pathname.startsWith(item.href));
           const Icon = item.icon;
+          const badge = badges?.[item.href] ?? 0;
           return (
             <Link
               key={item.href}
@@ -84,7 +97,12 @@ export function Sidebar({ items }: { items: NavItem[] }) {
               )}
             >
               <Icon className={cn("h-4 w-4", active && "text-primary")} />
-              {t(item.labelKey)}
+              <span className="flex-1">{t(item.labelKey)}</span>
+              {badge > 0 && (
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[11px] font-bold text-destructive-foreground">
+                  {badge}
+                </span>
+              )}
             </Link>
           );
         })}

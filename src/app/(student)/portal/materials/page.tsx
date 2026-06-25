@@ -51,12 +51,28 @@ export default async function StudentMaterialsPage({
 }: {
   searchParams?: Promise<Search>;
 }) {
-  await requireRole(Role.STUDENT);
+  const session = await requireRole(Role.STUDENT);
   const t = await getTranslations("materials");
   const tCommon = await getTranslations("common");
   const tDash = await getTranslations("dashboard");
   const sp = (await searchParams) ?? {};
-  const track = isTrack(sp.track) ? sp.track : null;
+
+  // Folder visibility: a student only sees the tracks assigned to them.
+  // Empty/null allowedTracks = sees all tracks (backwards compatible).
+  const me = await prisma.student.findUnique({
+    where: { userId: session.user.id },
+    select: { allowedTracks: true },
+  });
+  const allowed = (me?.allowedTracks ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s): s is MaterialTrack => isTrack(s));
+  const visibleTracks: MaterialTrack[] =
+    allowed.length > 0 ? TRACK_ORDER.filter((tr) => allowed.includes(tr)) : [...TRACK_ORDER];
+  const canSee = (tr: MaterialTrack) => visibleTracks.includes(tr);
+
+  const requested = isTrack(sp.track) ? sp.track : null;
+  const track = requested && canSee(requested) ? requested : null;
   const section = sp.section?.trim() || null;
 
   if (!track) {
@@ -78,7 +94,7 @@ export default async function StudentMaterialsPage({
           <p className="text-sm text-muted-foreground">{tDash("yourFolders")}</p>
         </header>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
-          {TRACK_ORDER.map((tr) => {
+          {visibleTracks.map((tr) => {
             const visual = TRACK_VISUAL[tr];
             const Icon = visual.icon;
             const count = countByTrack.get(tr) ?? 0;

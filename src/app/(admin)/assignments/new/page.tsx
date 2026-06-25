@@ -70,6 +70,15 @@ export default async function NewAssignmentPage({
               <Label htmlFor="dueAt">{t("dueAt")}</Label>
               <Input id="dueAt" name="dueAt" type="datetime-local" />
             </div>
+            <div className="flex items-center gap-2 md:col-span-2">
+              <input
+                id="summer"
+                name="summer"
+                type="checkbox"
+                className="h-4 w-4 rounded border-input"
+              />
+              <Label htmlFor="summer">{t("summer")}</Label>
+            </div>
             <div className="md:col-span-2">
               <Button type="submit">{tCommon("save")}</Button>
             </div>

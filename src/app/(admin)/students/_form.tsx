@@ -5,7 +5,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { MeetLinkField } from "@/components/students/meet-link-field";
-import { EnglishLevel, StudentStatus } from "@/lib/enums";
+import { EnglishLevel, StudentStatus, TRACK_ORDER } from "@/lib/enums";
 import type { Group, Student } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { UserCircle } from "lucide-react";
@@ -22,6 +22,10 @@ export async function StudentForm({
   const t = await getTranslations("students");
   const tCommon = await getTranslations("common");
   const tLevel = await getTranslations("level");
+  const tMaterials = await getTranslations("materials");
+  const selectedTracks = new Set(
+    (student?.allowedTracks ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+  );
   return (
     <form action={action} encType="multipart/form-data" className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <div className="md:col-span-2 flex items-center gap-4 rounded-lg border bg-card/50 p-4">
@@ -176,6 +180,25 @@ export async function StudentForm({
             />
             {t("notifyWhatsapp")}
           </label>
+        </div>
+      </div>
+      <div className="space-y-2 rounded-lg border bg-card/50 p-4 md:col-span-2">
+        <Label>{t("allowedTracks")}</Label>
+        <p className="text-xs text-muted-foreground">{t("allowedTracksHint")}</p>
+        <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-3">
+          {TRACK_ORDER.map((tr) => (
+            <label key={tr} htmlFor={`track-${tr}`} className="flex items-center gap-2 text-sm">
+              <input
+                id={`track-${tr}`}
+                name="allowedTracks"
+                type="checkbox"
+                value={tr}
+                defaultChecked={selectedTracks.has(tr)}
+                className="h-4 w-4 rounded border-input"
+              />
+              {tMaterials(`trackOptions.${tr}`)}
+            </label>
+          ))}
         </div>
       </div>
       <div className="space-y-1.5 md:col-span-2">

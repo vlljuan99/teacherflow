@@ -14,6 +14,10 @@ const AssignmentSchema = z
     studentId: z.string().optional().transform((v) => v || null),
     groupId: z.string().optional().transform((v) => v || null),
     dueAt: z.string().optional().transform((v) => (v ? new Date(v) : null)),
+    summer: z
+      .union([z.literal("on"), z.literal("true"), z.literal("false"), z.literal("")])
+      .optional()
+      .transform((v) => v === "on" || v === "true"),
   })
   .refine(
     (d) => Boolean(d.studentId) !== Boolean(d.groupId),
@@ -33,6 +37,7 @@ export async function createAssignment(formData: FormData) {
       studentId: data.studentId,
       groupId: data.groupId,
       dueAt: data.dueAt,
+      summer: data.summer,
       createdById: session.user.id,
       status: AssignmentStatus.PENDING,
     },
@@ -52,6 +57,7 @@ export async function quickAssignHomework(opts: {
   groupId?: string | null;
   worksheetId: string;
   dueAt?: string | null;
+  summer?: boolean;
 }) {
   const session = await requireRole(Role.TEACHER);
   if (!opts.studentId && !opts.groupId) {
@@ -66,6 +72,7 @@ export async function quickAssignHomework(opts: {
       studentId: opts.studentId ?? null,
       groupId: opts.groupId ?? null,
       dueAt: opts.dueAt ? new Date(opts.dueAt) : null,
+      summer: opts.summer ?? false,
       createdById: session.user.id,
       status: AssignmentStatus.PENDING,
     },
