@@ -1,7 +1,11 @@
 {
   "app": {
-    "name": "TeacherFlow",
-    "tagline": "Gestión académica para profesoras de inglés"
+    "name": "English Odyssey",
+    "tagline": "Cada lección, un viaje"
+  },
+  "brand": {
+    "journeyTitle": "Tu viaje continúa",
+    "journeySubtitle": "Cada lección te acerca a tu destino."
   },
   "common": {
     "save": "Guardar",

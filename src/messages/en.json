@@ -1,7 +1,11 @@
 {
   "app": {
-    "name": "TeacherFlow",
-    "tagline": "Academic management for English teachers"
+    "name": "English Odyssey",
+    "tagline": "Every lesson, a journey"
+  },
+  "brand": {
+    "journeyTitle": "Your journey continues",
+    "journeySubtitle": "Every lesson brings you closer to your destination."
   },
   "common": {
     "save": "Save",

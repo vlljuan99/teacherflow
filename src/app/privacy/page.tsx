@@ -3,7 +3,7 @@ export default function PrivacyPage() {
     <div className="mx-auto max-w-2xl px-6 py-12 text-sm leading-relaxed">
       <h1 className="text-2xl font-semibold">Política de privacidad</h1>
       <p className="mt-4 text-muted-foreground">
-        TeacherFlow trata datos personales conforme al Reglamento General de Protección
+        English Odyssey trata datos personales conforme al Reglamento General de Protección
         de Datos (RGPD). Los datos de alumnos y tutores son utilizados exclusivamente
         para la gestión académica y administrativa por parte de la profesora responsable.
       </p>

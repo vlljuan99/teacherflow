@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { LocaleSwitcher } from "@/components/layout/locale-switcher";
-import { GraduationCap } from "lucide-react";
+import { OdysseyMark } from "@/components/brand/odyssey-logo";
 import { audit } from "@/server/audit/log";
 
 async function loginAction(formData: FormData) {
@@ -63,7 +63,7 @@ export default async function LoginPage({
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(ellipse 60% 50% at 18% 0%, hsl(258 90% 90% / 0.8) 0%, transparent 55%), radial-gradient(ellipse 55% 45% at 100% 10%, hsl(188 85% 86% / 0.7) 0%, transparent 52%), radial-gradient(ellipse 70% 55% at 85% 100%, hsl(22 90% 88% / 0.6) 0%, transparent 55%)",
+            "radial-gradient(ellipse 65% 55% at 20% 0%, hsl(351 70% 88% / 0.55) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 100% 15%, hsl(38 80% 86% / 0.55) 0%, transparent 52%), radial-gradient(ellipse 70% 55% at 85% 100%, hsl(222 50% 84% / 0.4) 0%, transparent 55%)",
         }}
       />
       <div className="w-full max-w-sm space-y-5 animate-fade-in-up">
@@ -72,10 +72,10 @@ export default async function LoginPage({
         </div>
         <Card className="shadow-elevated">
           <CardHeader className="items-center text-center">
-            <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent text-white shadow-lg shadow-primary/30">
-              <GraduationCap className="h-6 w-6" />
-            </div>
-            <CardTitle className="text-xl">TeacherFlow</CardTitle>
+            <OdysseyMark className="mb-1 h-14 w-14" />
+            <CardTitle className="font-serif text-2xl text-primary">
+              English Odyssey
+            </CardTitle>
             <CardDescription>{t("welcomeBack")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

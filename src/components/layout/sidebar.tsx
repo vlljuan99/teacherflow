@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { OdysseyLogo } from "@/components/brand/odyssey-logo";
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
@@ -17,7 +18,7 @@ import {
   CreditCard,
   ShieldCheck,
   FolderOpen,
-  GraduationCap,
+  Compass,
   TrendingUp,
   Sparkles,
   Settings,
@@ -69,13 +70,11 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const t = useTranslations("nav");
+  const tBrand = useTranslations("brand");
   return (
-    <aside className="hidden w-60 shrink-0 border-r bg-card/60 backdrop-blur-xl md:flex md:flex-col">
-      <div className="flex items-center gap-2.5 border-b px-5 py-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-white shadow-md shadow-primary/30">
-          <GraduationCap className="h-[18px] w-[18px]" />
-        </div>
-        <span className="text-base font-bold tracking-tight">TeacherFlow</span>
+    <aside className="hidden w-60 shrink-0 border-r bg-card/70 backdrop-blur-xl md:flex md:flex-col">
+      <div className="border-b px-5 py-4">
+        <OdysseyLogo />
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {items.map((item) => {
@@ -93,7 +92,7 @@ export function Sidebar({
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-foreground/70 transition-all hover:bg-secondary hover:text-foreground",
                 active &&
-                  "bg-gradient-to-r from-primary/15 to-accent/10 font-semibold text-primary shadow-sm ring-1 ring-inset ring-primary/10 hover:from-primary/15 hover:to-accent/10 hover:text-primary",
+                  "bg-primary/10 font-semibold text-primary ring-1 ring-inset ring-primary/15 hover:bg-primary/10 hover:text-primary",
               )}
             >
               <Icon className={cn("h-4 w-4", active && "text-primary")} />
@@ -107,6 +106,18 @@ export function Sidebar({
           );
         })}
       </nav>
+      <div className="p-3">
+        <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-primary/[0.06] p-4">
+          <Compass className="absolute -bottom-3 -right-3 h-16 w-16 text-primary/10" />
+          <div className="flex items-center gap-2 text-primary">
+            <Compass className="h-4 w-4" />
+            <span className="text-sm font-semibold">{tBrand("journeyTitle")}</span>
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {tBrand("journeySubtitle")}
+          </p>
+        </div>
+      </div>
     </aside>
   );
 }
