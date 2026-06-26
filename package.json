@@ -13,7 +13,8 @@
     "prisma:studio": "prisma studio",
     "db:push": "prisma db push --skip-generate",
     "db:seed": "tsx prisma/seed.ts",
-    "create:teacher": "tsx scripts/create-teacher.mts"
+    "create:teacher": "tsx scripts/create-teacher.mts",
+    "create:user": "tsx scripts/create-user.mts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
