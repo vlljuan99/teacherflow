@@ -31,7 +31,11 @@ async function loginAction(formData: FormData) {
     entity: "User",
     entityId: session?.user?.id,
   });
-  if (session?.user?.role === Role.TEACHER) redirect("/dashboard");
+  if (
+    session?.user?.role === Role.TEACHER ||
+    session?.user?.role === Role.ADMIN
+  )
+    redirect("/dashboard");
   redirect("/portal/dashboard");
 }
 
@@ -53,7 +57,8 @@ export default async function LoginPage({
 
   const session = await auth();
   if (session?.user) {
-    if (session.user.role === Role.TEACHER) redirect("/dashboard");
+    if (session.user.role === Role.TEACHER || session.user.role === Role.ADMIN)
+      redirect("/dashboard");
     redirect("/portal/dashboard");
   }
 

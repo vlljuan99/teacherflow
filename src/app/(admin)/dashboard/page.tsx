@@ -3,6 +3,7 @@ import {
   startOfMonth,
   endOfMonth,
   startOfDay,
+  endOfDay,
 } from "date-fns";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
@@ -13,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MeetButton } from "@/components/ui/meet-button";
-import { Video, Unplug, Users, ClipboardCheck, Wallet, AlertCircle, TrendingUp } from "lucide-react";
+import { Video, Unplug, Users, ClipboardCheck, Wallet, AlertCircle, TrendingUp, CalendarDays } from "lucide-react";
 import { disconnectGoogleCalendar } from "@/server/actions/google";
 import { formatDateTime, formatMoney } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ export default async function TeacherDashboardPage({
     pendingPayments,
     overduePayments,
     monthRevenue,
+    classesToday,
     upcoming,
     activity,
     googleAccount,
@@ -54,15 +56,28 @@ export default async function TeacherDashboardPage({
       where: { status: "PAID", paidAt: { gte: monthStart, lte: monthEnd } },
       _sum: { amountCents: true },
     }),
+    prisma.class.count({
+      where: { startAt: { gte: today, lte: endOfDay(today) } },
+    }),
     prisma.class.findMany({
       where: { startAt: { gte: today } },
       orderBy: { startAt: "asc" },
       take: 5,
       include: { student: true, group: true },
     }),
-    prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 10 }),
+    // Recent activity: only students (logins and their actions), never teachers.
+    prisma.auditLog.findMany({
+      where: { actor: { role: Role.STUDENT } },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      include: { actor: { include: { student: true } } },
+    }),
     prisma.googleAccount.findUnique({ where: { userId: session.user.id } }),
   ]);
+
+  const activityLabels: Record<string, string> = {
+    "login.success": t("activityLogin"),
+  };
 
   return (
     <div className="space-y-6">
@@ -127,6 +142,7 @@ export default async function TeacherDashboardPage({
           icon={TrendingUp}
           tone="success"
         />
+        <Stat label={t("classesToday")} value={classesToday} href="/classes" icon={CalendarDays} tone="primary" />
         <Stat label={t("pendingPayments")} value={pendingPayments} href="/payments" icon={Wallet} tone="accent" />
         <Stat label={t("overduePayments")} value={overduePayments} href="/payments?status=OVERDUE" icon={AlertCircle} tone="destructive" />
       </div>
@@ -168,28 +184,64 @@ export default async function TeacherDashboardPage({
           </CardHeader>
           <CardContent>
             {activity.length === 0 ? (
-              <p className="text-sm text-muted-foreground">—</p>
+              <p className="text-sm text-muted-foreground">
+                {t("recentActivityEmpty")}
+              </p>
             ) : (
-              <ul className="space-y-1 text-sm">
-                {activity.map((a) => (
-                  <li key={a.id} className="flex items-center justify-between gap-2">
-                    <span>
-                      <Badge tone="muted" className="mr-2">
-                        {a.action}
-                      </Badge>
-                      <span className="text-muted-foreground">{a.entity}</span>
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDateTime(a.createdAt)}
-                    </span>
-                  </li>
-                ))}
+              <ul className="space-y-2.5 text-sm">
+                {activity.map((a) => {
+                  const s = a.actor?.student;
+                  const name = s
+                    ? `${s.firstName} ${s.lastName}`.trim()
+                    : a.actor?.name ?? "—";
+                  const label = activityLabels[a.action] ?? a.action;
+                  return (
+                    <li key={a.id} className="flex items-center gap-3">
+                      <ActivityAvatar photoUrl={s?.photoUrl} name={name} />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium">{name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {label}
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {formatDateTime(a.createdAt)}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </CardContent>
         </Card>
       </div>
     </div>
+  );
+}
+
+function ActivityAvatar({
+  photoUrl,
+  name,
+}: {
+  photoUrl?: string | null;
+  name: string;
+}) {
+  const initials =
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "·";
+  return (
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-xs font-semibold text-primary ring-1 ring-border">
+      {photoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={photoUrl} alt={name} className="h-full w-full object-cover" />
+      ) : (
+        initials
+      )}
+    </span>
   );
 }
 

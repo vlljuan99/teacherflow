@@ -14,7 +14,11 @@ export async function requireSession() {
 
 export async function requireRole(role: Role | Role[]) {
   const session = await requireSession();
-  const allowed = Array.isArray(role) ? role : [role];
+  const allowed = Array.isArray(role) ? [...role] : [role];
+  // Admins can access anything teachers can (full back-office access).
+  if (allowed.includes(Role.TEACHER) && !allowed.includes(Role.ADMIN)) {
+    allowed.push(Role.ADMIN);
+  }
   if (!allowed.includes(session.user.role)) {
     redirect("/login");
   }
@@ -25,7 +29,7 @@ export function assertCanAccessStudent(
   session: { user: { role: Role; studentId?: string | null } },
   studentId: string,
 ) {
-  if (session.user.role === Role.TEACHER) return;
+  if (session.user.role === Role.TEACHER || session.user.role === Role.ADMIN) return;
   if (session.user.role === Role.STUDENT && session.user.studentId === studentId) return;
   throw new Error("Forbidden");
 }

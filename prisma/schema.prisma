@@ -17,11 +17,18 @@ model User {
   name         String
   locale       String   @default("es")
   isActive     Boolean  @default(true)
+  photoUrl     String?
+  // Teacher profile / "contact your teacher" fields (all optional).
+  contactEmail String?
+  contactPhone String?
+  contactWhatsapp String?
+  contactNote  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   student           Student?
   guardian          Guardian?
+  studentsAssigned  Student[]    @relation("StudentTeacher")
   worksheetsCreated Worksheet[]  @relation("WorksheetCreator")
   assignmentsCreated Assignment[] @relation("AssignmentCreator")
   materialsUploaded Material[]   @relation("MaterialUploader")
@@ -63,6 +70,8 @@ model Student {
   meetLink      String?
   groupId          String?
   group            Group?    @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  teacherId        String?
+  teacher          User?     @relation("StudentTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
   driveFolderId    String?
   notebookDocId    String?
   notebookDocUrl   String?

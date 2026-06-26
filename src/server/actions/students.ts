@@ -23,6 +23,7 @@ const StudentSchema = z.object({
   level: z.nativeEnum(EnglishLevel),
   status: z.nativeEnum(StudentStatus),
   groupId: z.string().optional().transform((v) => (v ? v : null)),
+  teacherId: z.string().optional().transform((v) => (v ? v : null)),
   meetLink: z.string().url().or(z.literal("")).optional().transform((v) => v || null),
   isMinor: z
     .union([z.literal("on"), z.literal("true"), z.literal("false"), z.literal("")])

@@ -13,6 +13,13 @@ export default async function StudentLayout({
   const session = await requireRole(Role.STUDENT);
   const studentId = session.user.studentId;
 
+  const student = studentId
+    ? await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { photoUrl: true },
+      })
+    : null;
+
   // Pending homework badge: assignments without a submitted/corrected submission.
   const pendingCount = studentId
     ? await prisma.assignment.count({
@@ -36,7 +43,11 @@ export default async function StudentLayout({
     <div className="flex min-h-screen">
       <Sidebar items={STUDENT_NAV} badges={badges} />
       <div className="flex flex-1 flex-col">
-        <Header userName={session.user.name ?? ""} userRole="Alumno" />
+        <Header
+          userName={session.user.name ?? ""}
+          userRole="Alumno"
+          avatarUrl={student?.photoUrl}
+        />
         <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 md:pb-6">
           <div className="animate-fade-in-up">{children}</div>
         </main>
