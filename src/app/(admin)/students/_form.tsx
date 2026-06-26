@@ -13,10 +13,12 @@ import { UserCircle } from "lucide-react";
 export async function StudentForm({
   action,
   groups,
+  teachers,
   student,
 }: {
   action: (formData: FormData) => Promise<void>;
   groups: Group[];
+  teachers: { id: string; name: string }[];
   student?: Student | null;
 }) {
   const t = await getTranslations("students");
@@ -129,6 +131,21 @@ export async function StudentForm({
           {groups.map((g) => (
             <option key={g.id} value={g.id}>
               {g.name}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="teacherId">{t("teacher")}</Label>
+        <Select
+          id="teacherId"
+          name="teacherId"
+          defaultValue={student?.teacherId ?? ""}
+        >
+          <option value="">{t("noTeacher")}</option>
+          {teachers.map((tch) => (
+            <option key={tch.id} value={tch.id}>
+              {tch.name}
             </option>
           ))}
         </Select>

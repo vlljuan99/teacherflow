@@ -1,6 +1,7 @@
 // Enum constants – replaces Prisma-generated enums for SQLite compatibility
 
 export const Role = {
+  ADMIN: "ADMIN",
   TEACHER: "TEACHER",
   STUDENT: "STUDENT",
   GUARDIAN: "GUARDIAN",

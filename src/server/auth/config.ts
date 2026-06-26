@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { Role } from "@/lib/enums";
+import { audit } from "@/server/audit/log";
 import { z } from "zod";
 
 declare module "next-auth" {
@@ -158,11 +159,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const provisioned = await provisionFromEmail(email, user.name);
         if (!provisioned) return "/login?error=not_registered";
         if (user.image) {
+          // Backfill the photo from Google when missing (students and staff).
           await prisma.student.updateMany({
             where: { email: { equals: email.toLowerCase() }, photoUrl: null },
             data: { photoUrl: user.image },
           });
+          if (!provisioned.photoUrl) {
+            await prisma.user.update({
+              where: { id: provisioned.id },
+              data: { photoUrl: user.image },
+            });
+          }
         }
+        // Record the sign-in so it surfaces in the teacher's recent activity.
+        await audit({
+          actorUserId: provisioned.id,
+          action: "login.success",
+          entity: "User",
+          entityId: provisioned.id,
+        });
       }
       return true;
     },
