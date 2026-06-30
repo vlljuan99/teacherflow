@@ -65,9 +65,6 @@ const TRACK_VISUAL: Record<
   },
 };
 
-// The voyage: CEFR ladder the student travels through.
-const CEFR_LADDER = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
-
 // Tracks that map to a CEFR stage, so we can mark the student's current route.
 const TRACK_LEVEL: Partial<Record<MaterialTrack, string>> = {
   CAMBRIDGE_B1: "B1",
@@ -85,7 +82,13 @@ export default async function StudentDashboardPage() {
 
   const student = await prisma.student.findUnique({
     where: { id: studentId },
-    select: { groupId: true, firstName: true, allowedTracks: true, level: true },
+    select: {
+      groupId: true,
+      firstName: true,
+      allowedTracks: true,
+      level: true,
+      currentMilestoneId: true,
+    },
   });
   const groupId = student?.groupId ?? null;
   const allowed = (student?.allowedTracks ?? "")
@@ -105,6 +108,8 @@ export default async function StudentDashboardPage() {
     },
   };
 
+  const studentLevel = student?.level ?? "A1";
+
   const [
     upcoming,
     pending,
@@ -112,6 +117,7 @@ export default async function StudentDashboardPage() {
     trackCounts,
     expressionSetting,
     meaningSetting,
+    milestones,
   ] = await Promise.all([
     prisma.class.findMany({
       where: {
@@ -137,6 +143,10 @@ export default async function StudentDashboardPage() {
     prisma.siteSetting.findUnique({
       where: { key: "expressionOfWeekMeaning" },
     }),
+    prisma.levelMilestone.findMany({
+      where: { level: studentLevel },
+      orderBy: { order: "asc" },
+    }),
   ]);
 
   const countByTrack = new Map<string, number>();
@@ -148,11 +158,17 @@ export default async function StudentDashboardPage() {
   const meaning = meaningSetting?.value?.trim() ?? "";
   const firstName = student?.firstName ?? "";
 
-  // Voyage progress along the CEFR ladder.
-  const level = student?.level ?? "A1";
-  const stageIndex = Math.max(0, CEFR_LADDER.indexOf(level as (typeof CEFR_LADDER)[number]));
-  const lastIndex = CEFR_LADDER.length - 1;
-  const progressPct = (stageIndex / lastIndex) * 100;
+  // The voyage is now WITHIN the student's current level: an ordered set of
+  // milestones ("stops") shared by everyone at that level. The student sits at
+  // currentMilestone (default: the first stop) and moves port to port.
+  const level = studentLevel;
+  const hasMilestones = milestones.length > 0;
+  const rawIndex = milestones.findIndex((m) => m.id === student?.currentMilestoneId);
+  const stopIndex = rawIndex >= 0 ? rawIndex : 0;
+  const lastStop = milestones.length - 1;
+  const milestoneProgressPct = lastStop > 0 ? (stopIndex / lastStop) * 100 : 0;
+  const currentStop = hasMilestones ? milestones[stopIndex] : null;
+  const nextStop = hasMilestones && stopIndex < lastStop ? milestones[stopIndex + 1] : null;
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 sm:space-y-8">
@@ -194,41 +210,62 @@ export default async function StudentDashboardPage() {
               {t("yourJourney")}
             </div>
             <span className="text-xs text-muted-foreground">
-              {t("journeyStage", { current: stageIndex + 1, total: CEFR_LADDER.length })} · {level}
+              {hasMilestones
+                ? `${level} · ${t("journeyStop", { current: stopIndex + 1, total: milestones.length })}`
+                : level}
             </span>
           </div>
-          <div className="relative mx-1.5 mb-2.5 h-1 rounded-full bg-border">
-            <div
-              className="absolute left-0 top-0 h-1 rounded-full bg-primary"
-              style={{ width: `${progressPct}%` }}
-            />
-            {CEFR_LADDER.map((lvl, i) => {
-              const done = i < stageIndex;
-              const current = i === stageIndex;
-              return (
+
+          {hasMilestones ? (
+            <>
+              <div className="relative mx-1.5 mb-3 h-1 rounded-full bg-border">
                 <div
-                  key={lvl}
-                  className={
-                    current
-                      ? "absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-primary bg-card"
-                      : `absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ${done ? "bg-primary" : "bg-muted-foreground/30"}`
-                  }
-                  style={{ left: `${(i / lastIndex) * 100}%` }}
+                  className="absolute left-0 top-0 h-1 rounded-full bg-primary"
+                  style={{ width: `${milestoneProgressPct}%` }}
                 />
-              );
-            })}
-          </div>
-          <div className="flex justify-between px-0.5 text-[11px] text-muted-foreground">
-            {CEFR_LADDER.map((lvl, i) => (
-              <span
-                key={lvl}
-                className={i === stageIndex ? "font-semibold text-primary" : undefined}
-              >
-                {lvl}
-                {i === stageIndex ? ` · ${t("journeyHere")}` : ""}
-              </span>
-            ))}
-          </div>
+                {milestones.map((m, i) => {
+                  const done = i < stopIndex;
+                  const current = i === stopIndex;
+                  return (
+                    <div
+                      key={m.id}
+                      className={
+                        current
+                          ? "absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-primary bg-card"
+                          : `absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ${done ? "bg-primary" : "bg-muted-foreground/30"}`
+                      }
+                      style={{ left: `${lastStop > 0 ? (i / lastStop) * 100 : 0}%` }}
+                    />
+                  );
+                })}
+              </div>
+              <div className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <div className="min-w-0">
+                  <div className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                    {t("journeyCurrentLabel")}
+                  </div>
+                  <div className="text-sm font-semibold leading-tight sm:text-base">
+                    {currentStop?.title}
+                  </div>
+                  {currentStop?.description && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {currentStop.description}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {nextStop
+                      ? t("journeyNext", { title: nextStop.title })
+                      : t("journeyComplete")}
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t("journeyEmpty", { level })}
+            </p>
+          )}
         </CardContent>
       </Card>
 

@@ -81,6 +81,9 @@ model Student {
   placementScore       Float?
   placementMaxScore    Float?
   placementSubmissionId String?
+  // Position in the odyssey for the student's current level (shared map).
+  currentMilestoneId   String?
+  currentMilestone     LevelMilestone? @relation("StudentCurrentMilestone", fields: [currentMilestoneId], references: [id], onDelete: SetNull)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -95,6 +98,25 @@ model Student {
   placementTest  PlacementTest?
   attendance       Attendance[]
   skillSubmissions SkillSubmission[]
+}
+
+// ---------------- Odyssey (per-level milestone map) ----------------
+
+// An ordered "port" on the voyage through a single CEFR level. The map is
+// shared by every student at that level; each student points to the one they
+// are currently at via Student.currentMilestoneId.
+model LevelMilestone {
+  id          String   @id @default(cuid())
+  level       String   // A1..C2 (CEFR)
+  order       Int      @default(0)
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  studentsHere Student[] @relation("StudentCurrentMilestone")
+
+  @@index([level, order])
 }
 
 model Guardian {
@@ -162,9 +184,23 @@ model Class {
 
   attachments ClassAttachment[]
   attendance  Attendance[]
+  recordOfWork RecordOfWork?
 
   @@index([startAt])
   @@index([seriesId])
+}
+
+// The teacher's per-class record of work (group/time come from the Class).
+model RecordOfWork {
+  id        String   @id @default(cuid())
+  classId   String   @unique
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  warmUp    String?
+  mainTask  String?
+  homework  String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ClassAttachment {

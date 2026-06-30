@@ -53,3 +53,27 @@
     @apply flex h-10 w-full rounded-xl border border-input bg-card px-3.5 py-2 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50;
   }
 }
+
+/* Print: isolate the record-of-work sheet so it prints like the paper template. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .record-sheet,
+  .record-sheet * {
+    visibility: visible;
+  }
+  .record-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border-color: #000 !important;
+  }
+  .record-sheet textarea {
+    color: #000;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

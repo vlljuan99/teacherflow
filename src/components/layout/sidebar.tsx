@@ -58,6 +58,7 @@ export const ADMIN_NAV: NavItem[] = [
 
   { href: "/profile", labelKey: "myProfile", icon: UserCog, section: "sectionConfig" },
   { href: "/payments", labelKey: "payments", icon: CreditCard, section: "sectionConfig" },
+  { href: "/settings/odyssey", labelKey: "odyssey", icon: Compass, section: "sectionConfig" },
   { href: "/settings/expression", labelKey: "expression", icon: Sparkles, section: "sectionConfig" },
   { href: "/settings/speaking", labelKey: "speaking", icon: MessageSquare, section: "sectionConfig" },
   { href: "/settings/reminders", labelKey: "reminders", icon: Mail, section: "sectionConfig" },

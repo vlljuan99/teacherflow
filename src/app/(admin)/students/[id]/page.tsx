@@ -4,8 +4,10 @@ import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Table, THead, TBody, TR, TH, TD } from "@/components/ui/table";
 import { deleteStudent } from "@/server/actions/students";
+import { setStudentMilestone } from "@/server/actions/milestones";
 import { ageFromBirthDate, formatDate, formatMoney } from "@/lib/utils";
 import { getTranslations } from "next-intl/server";
 import { Pencil, Trash2 } from "lucide-react";
@@ -42,6 +44,16 @@ export default async function StudentDetailPage({
   });
   if (!student) notFound();
   const age = ageFromBirthDate(student.birthDate);
+
+  // Odyssey: the shared map for this student's level + where they currently are.
+  const milestones = await prisma.levelMilestone.findMany({
+    where: { level: student.level },
+    orderBy: { order: "asc" },
+  });
+  const setPosition = async (formData: FormData) => {
+    "use server";
+    await setStudentMilestone(student.id, String(formData.get("milestoneId") ?? ""));
+  };
 
   return (
     <div className="space-y-6">
@@ -150,6 +162,52 @@ export default async function StudentDetailPage({
       </div>
 
       <PlacementCard studentId={student.id} />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("currentMilestone")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {milestones.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t("noMilestonesForLevel", { level: student.level })}{" "}
+              <Link
+                href={`/settings/odyssey?level=${student.level}`}
+                className="text-primary hover:underline"
+              >
+                {t("manageOdyssey", { level: student.level })}
+              </Link>
+            </p>
+          ) : (
+            <form
+              action={setPosition}
+              className="flex flex-col gap-3 sm:flex-row sm:items-end"
+            >
+              <div className="flex-1 space-y-1.5">
+                <label
+                  htmlFor="milestoneId"
+                  className="text-sm text-muted-foreground"
+                >
+                  {t("currentMilestoneHint", { level: student.level })}
+                </label>
+                <Select
+                  id="milestoneId"
+                  name="milestoneId"
+                  defaultValue={student.currentMilestoneId ?? ""}
+                >
+                  <option value="">{t("milestoneNotStarted")}</option>
+                  {milestones.map((m, i) => (
+                    <option key={m.id} value={m.id}>
+                      {i + 1}. {m.title}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <Button type="submit">{tCommon("save")}</Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
 
       <StudentClassesSection studentId={student.id} />
 

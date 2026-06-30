@@ -13,11 +13,14 @@ import { DeleteClassButton } from "@/components/classes/delete-class-button";
 import { ClassHomeworkSection } from "@/components/homework/class-homework-section";
 import { AttendanceSection } from "@/components/classes/attendance-section";
 import { SeriesBanner } from "@/components/classes/series-banner";
+import { RecordOfWorkCard } from "@/components/classes/record-of-work-card";
 import { ClassForm } from "../_form";
 import { updateClass } from "@/server/actions/classes";
 import { saveClassAttendance } from "@/server/actions/attendance";
+import { saveRecordOfWork } from "@/server/actions/record-of-work";
 import { generateMeetForClass, removeMeetForClass } from "@/server/actions/google";
 import { getTranslations } from "next-intl/server";
+import { formatDateTime } from "@/lib/utils";
 
 export default async function ClassDetailPage({
   params,
@@ -28,10 +31,16 @@ export default async function ClassDetailPage({
   const session = await requireRole(Role.TEACHER);
   const t = await getTranslations("classes");
   const tCommon = await getTranslations("common");
+  const tRecord = await getTranslations("recordOfWork");
   const [klass, groups, students, worksheets, materials, googleAccount] = await Promise.all([
     prisma.class.findUnique({
       where: { id },
-      include: { attachments: true },
+      include: {
+        attachments: true,
+        recordOfWork: true,
+        group: { select: { name: true } },
+        student: { select: { firstName: true, lastName: true } },
+      },
     }),
     prisma.group.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
     prisma.student.findMany({
@@ -79,6 +88,15 @@ export default async function ClassDetailPage({
     "use server";
     await updateClass(klass.id, formData);
   };
+  const saveRecordAction = async (formData: FormData) => {
+    "use server";
+    await saveRecordOfWork(klass.id, formData);
+  };
+  const recordGroup =
+    klass.group?.name ??
+    (klass.student
+      ? `${klass.student.firstName} ${klass.student.lastName}`
+      : tRecord("individual"));
   const canGenerateMeet = klass.modality === "ONLINE" && !!googleAccount;
   return (
     <div className="space-y-6">
@@ -169,6 +187,18 @@ export default async function ClassDetailPage({
         roster={roster}
         existing={existingAttendance}
         action={saveAttendanceAction}
+      />
+
+      <RecordOfWorkCard
+        action={saveRecordAction}
+        values={{
+          warmUp: klass.recordOfWork?.warmUp ?? "",
+          mainTask: klass.recordOfWork?.mainTask ?? "",
+          homework: klass.recordOfWork?.homework ?? "",
+          notes: klass.recordOfWork?.notes ?? "",
+        }}
+        group={recordGroup}
+        time={formatDateTime(klass.startAt)}
       />
 
       <Card>
