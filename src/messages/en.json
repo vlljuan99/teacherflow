@@ -79,7 +79,9 @@
     "myWriting": "Writing",
     "myProfile": "My profile",
     "contactTeacher": "Contact your teacher",
-    "logs": "Activity log"
+    "logs": "Activity log",
+    "more": "More",
+    "less": "Less"
   },
   "logs": {
     "title": "Activity log",
@@ -104,7 +106,18 @@
     "contactWhatsapp": "WhatsApp",
     "contactNote": "Note / hours",
     "contactNotePlaceholder": "E.g.: Available Mon–Fri, 4–8pm. For quick questions, WhatsApp is best.",
-    "contactHint": "Nothing is required. Students only see what you fill in."
+    "contactHint": "Nothing is required. Students only see what you fill in.",
+    "password": "Password",
+    "passwordHint": "Change your password. You'll need your current one.",
+    "passwordSetHint": "Set a password to sign in with email too (in addition to Google).",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Repeat new password",
+    "changePassword": "Change password",
+    "pwOk": "Password updated.",
+    "pwBad": "Your current password is incorrect.",
+    "pwMismatch": "The new passwords don't match.",
+    "pwShort": "The new password must be at least 8 characters."
   },
   "contactTeacher": {
     "title": "Contact your teacher",

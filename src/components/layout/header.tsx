@@ -9,10 +9,12 @@ export async function Header({
   userName,
   userRole,
   avatarUrl,
+  showLocaleSwitcher = true,
 }: {
   userName: string;
   userRole: string;
   avatarUrl?: string | null;
+  showLocaleSwitcher?: boolean;
 }) {
   const t = await getTranslations("common");
   return (
@@ -25,7 +27,7 @@ export async function Header({
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <LocaleSwitcher />
+        {showLocaleSwitcher && <LocaleSwitcher />}
         <form
           action={async () => {
             "use server";

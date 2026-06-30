@@ -47,6 +47,7 @@ export default async function StudentLayout({
           userName={session.user.name ?? ""}
           userRole="Alumno"
           avatarUrl={student?.photoUrl}
+          showLocaleSwitcher={false}
         />
         <main className="flex-1 overflow-y-auto p-4 pb-24 sm:p-6 md:pb-6">
           <div className="animate-fade-in-up">{children}</div>

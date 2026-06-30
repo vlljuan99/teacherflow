@@ -1,7 +1,9 @@
 "use server";
 
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { Role } from "@/lib/enums";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/server/auth/session";
@@ -48,4 +50,45 @@ export async function updateProfile(formData: FormData) {
     entityId: session.user.id,
   });
   revalidatePath("/profile");
+}
+
+const PasswordSchema = z.object({
+  currentPassword: z.string().optional().transform((v) => v ?? ""),
+  newPassword: z.string().min(8),
+  confirmPassword: z.string().min(8),
+});
+
+export async function changePassword(formData: FormData) {
+  const session = await requireRole(Role.TEACHER);
+  const parsed = PasswordSchema.safeParse(
+    Object.fromEntries(formData.entries()),
+  );
+  if (!parsed.success) redirect("/profile?pw=short");
+  const { currentPassword, newPassword, confirmPassword } = parsed.data;
+  if (newPassword !== confirmPassword) redirect("/profile?pw=mismatch");
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { passwordHash: true },
+  });
+  // If the account already has a password, the current one must match.
+  if (user?.passwordHash) {
+    const ok =
+      currentPassword.length > 0 &&
+      (await bcrypt.compare(currentPassword, user.passwordHash));
+    if (!ok) redirect("/profile?pw=bad");
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, 12);
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { passwordHash },
+  });
+  await audit({
+    actorUserId: session.user.id,
+    action: "profile.password.change",
+    entity: "User",
+    entityId: session.user.id,
+  });
+  redirect("/profile?pw=ok");
 }

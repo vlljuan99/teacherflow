@@ -1,10 +1,10 @@
 import Image from "next/image";
-import { UserCircle } from "lucide-react";
+import { UserCircle, CheckCircle2, AlertCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { Role } from "@/lib/enums";
 import { requireRole } from "@/server/auth/session";
-import { updateProfile } from "@/server/actions/profile";
+import { updateProfile, changePassword } from "@/server/actions/profile";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,10 +14,15 @@ import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ pw?: string }>;
+}) {
   const session = await requireRole(Role.TEACHER);
   const t = await getTranslations("profile");
   const tCommon = await getTranslations("common");
+  const { pw } = (await searchParams) ?? {};
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -28,11 +33,13 @@ export default async function ProfilePage() {
       contactPhone: true,
       contactWhatsapp: true,
       contactNote: true,
+      passwordHash: true,
     },
   });
+  const hasPassword = Boolean(user?.passwordHash);
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader title={t("title")} description={t("subtitle")} />
       <Card>
         <CardContent className="pt-6">
@@ -120,6 +127,79 @@ export default async function ProfilePage() {
 
             <div className="md:col-span-2">
               <Button type="submit">{tCommon("save")}</Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="mb-4">
+            <h2 className="text-base font-semibold">{t("password")}</h2>
+            <p className="text-sm text-muted-foreground">
+              {hasPassword ? t("passwordHint") : t("passwordSetHint")}
+            </p>
+          </div>
+
+          {pw === "ok" && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
+              <CheckCircle2 className="h-4 w-4" />
+              {t("pwOk")}
+            </div>
+          )}
+          {pw && pw !== "ok" && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+              <AlertCircle className="h-4 w-4" />
+              {t(
+                pw === "bad"
+                  ? "pwBad"
+                  : pw === "mismatch"
+                    ? "pwMismatch"
+                    : "pwShort",
+              )}
+            </div>
+          )}
+
+          <form
+            action={changePassword}
+            className="grid grid-cols-1 gap-4 md:grid-cols-2"
+          >
+            {hasPassword && (
+              <div className="space-y-1.5 md:col-span-2">
+                <Label htmlFor="currentPassword">{t("currentPassword")}</Label>
+                <Input
+                  id="currentPassword"
+                  name="currentPassword"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label htmlFor="newPassword">{t("newPassword")}</Label>
+              <Input
+                id="newPassword"
+                name="newPassword"
+                type="password"
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                minLength={8}
+                required
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Button type="submit">{t("changePassword")}</Button>
             </div>
           </form>
         </CardContent>

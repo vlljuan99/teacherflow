@@ -79,7 +79,9 @@
     "myWriting": "Writing",
     "myProfile": "Mi perfil",
     "contactTeacher": "Contacta con tu profe",
-    "logs": "Registro de actividad"
+    "logs": "Registro de actividad",
+    "more": "Más",
+    "less": "Menos"
   },
   "logs": {
     "title": "Registro de actividad",
@@ -104,7 +106,18 @@
     "contactWhatsapp": "WhatsApp",
     "contactNote": "Nota / horario",
     "contactNotePlaceholder": "Ej.: Disponible de lunes a viernes, 16:00–20:00. Para dudas rápidas, mejor por WhatsApp.",
-    "contactHint": "Ningún dato es obligatorio. Solo se mostrará a tus alumnos lo que rellenes."
+    "contactHint": "Ningún dato es obligatorio. Solo se mostrará a tus alumnos lo que rellenes.",
+    "password": "Contraseña",
+    "passwordHint": "Cambia tu contraseña. Necesitas introducir la actual.",
+    "passwordSetHint": "Establece una contraseña para entrar también con email (además de Google).",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Repite la nueva contraseña",
+    "changePassword": "Cambiar contraseña",
+    "pwOk": "Contraseña actualizada.",
+    "pwBad": "La contraseña actual no es correcta.",
+    "pwMismatch": "Las contraseñas nuevas no coinciden.",
+    "pwShort": "La nueva contraseña debe tener al menos 8 caracteres."
   },
   "contactTeacher": {
     "title": "Contacta con tu profe",
